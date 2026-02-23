@@ -45,17 +45,30 @@ class PomodoroView extends WatchUi.View {
         var width = dc.getWidth();
         var height = dc.getHeight();
         
-        dc.drawText(width / 2, height / 2 - 60, Graphics.FONT_NUMBER_THAI_HOT, timeStr, Graphics.TEXT_JUSTIFY_CENTER);
+        var timeFont = Graphics.FONT_NUMBER_THAI_HOT;
+        var statusFont = Graphics.FONT_SMALL;
+        
+        var timeHeight = dc.getFontHeight(timeFont);
+        var statusHeight = dc.getFontHeight(statusFont);
+        var hintFont = Graphics.FONT_TINY;
+        var hintHeight = dc.getFontHeight(hintFont);
+        
+        var centerY = height / 2;
+        var timeY = centerY - timeHeight / 2;
+        var statusY = timeY + timeHeight / 2 + statusHeight / 2 + 30;
+        var hintY = statusY + statusHeight / 2 + hintHeight / 2 + 10;
+        
+        dc.drawText(width / 2, timeY, timeFont, timeStr, Graphics.TEXT_JUSTIFY_CENTER);
         
         dc.setColor(statusColor, Graphics.COLOR_BLACK);
-        dc.drawText(width / 2, height / 2 + 50, Graphics.FONT_SMALL, status, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(width / 2, statusY, statusFont, status, Graphics.TEXT_JUSTIFY_CENTER);
         
         dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_BLACK);
         
         if (state == :idle) {
-            dc.drawText(width / 2, height - 30, Graphics.FONT_TINY, "START to work", Graphics.TEXT_JUSTIFY_CENTER);
+            dc.drawText(width / 2, hintY, hintFont, "START to work", Graphics.TEXT_JUSTIFY_CENTER);
         } else if (state == :working or state == :breakTime) {
-            dc.drawText(width / 2, height - 30, Graphics.FONT_TINY, "DOWN to stop", Graphics.TEXT_JUSTIFY_CENTER);
+            dc.drawText(width / 2, hintY, hintFont, "DOWN to stop", Graphics.TEXT_JUSTIFY_CENTER);
         }
     }
 }
