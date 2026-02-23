@@ -45,10 +45,10 @@ class PomodoroView extends WatchUi.View {
         var width = dc.getWidth();
         var height = dc.getHeight();
         
-        dc.drawText(width / 2, height / 2 - 40, Graphics.FONT_NUMBER_THAI_HOT, timeStr, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(width / 2, height / 2 - 60, Graphics.FONT_NUMBER_THAI_HOT, timeStr, Graphics.TEXT_JUSTIFY_CENTER);
         
         dc.setColor(statusColor, Graphics.COLOR_BLACK);
-        dc.drawText(width / 2, height / 2 + 30, Graphics.FONT_SMALL, status, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(width / 2, height / 2 + 50, Graphics.FONT_SMALL, status, Graphics.TEXT_JUSTIFY_CENTER);
         
         dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_BLACK);
         
