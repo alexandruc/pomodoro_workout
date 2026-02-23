@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<iq:manifest xmlns:iq="http://www.garmin.com/xml/connectiq" version="3">
+    <iq:application id="0123456789abcdef0123456789abcdef" type="widget" name="@Strings.AppName" launcherIcon="@Drawables.LauncherIcon" version="1.0.0" entry="PomodoroApp">
+        <iq:products>
+            <iq:product id="fenix6"/>
+            <iq:product id="fenix6pro"/>
+            <iq:product id="fenix6s"/>
+            <iq:product id="fenix6spro"/>
+            <iq:product id="fenix6xpro"/>
+            <iq:product id="venus2"/>
+            <iq:product id="venus2s"/>
+            <iq:product id="venus2q"/>
+            <iq:product id="vivoactive4"/>
+            <iq:product id="vivoactive4s"/>
+            <iq:product id="vivoactive5"/>
+            <iq:product id="forerunner245"/>
+            <iq:product id="forerunner245m"/>
+            <iq:product id="forerunner255"/>
+            <iq:product id="forerunner255s"/>
+            <iq:product id="forerunner945"/>
+            <iq:product id="forerunner955"/>
+            <iq:product id="forerunner965"/>
+            <iq:product id="instinct2"/>
+            <iq:product id="instinct2s"/>
+            <iq:product id="instinct2x"/>
+            <iq:product id="edge530"/>
+            <iq:product id="edge540"/>
+            <iq:product id="edge830"/>
+            <iq:product id="edge840"/>
+            <iq:product id="marq2"/>
+        </iq:products>
+        
+        <iq:languages>
+            <iq:language>eng</iq:language>
+        </iq:languages>
+    </iq:application>
+</iq:manifest>

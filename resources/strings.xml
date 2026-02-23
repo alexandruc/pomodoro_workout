@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<strings>
+    <string id="AppName">Pomodoro Workout</string>
+    <string id="WorkTime">Work Time</string>
+    <string id="BreakTime">Break Time</string>
+    <string id="History">History</string>
+    <string id="Start">Start</string>
+    <string id="Stop">Stop</string>
+    <string id="Work">WORK</string>
+    <string id="Break">BREAK</string>
+    <string id="Done">DONE</string>
+    <string id="Min">min</string>
+</strings>
