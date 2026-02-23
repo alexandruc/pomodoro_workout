@@ -11,6 +11,7 @@ class PomodoroApp extends Application.AppBase {
     private var state;
     private var remainingSeconds;
     private var timerDelegate;
+    private var endTime;
     
     private var workTime;
     private var breakTime;
@@ -29,15 +30,16 @@ class PomodoroApp extends Application.AppBase {
         
         remainingSeconds = workTime * 60;
         timerDelegate = null;
+        endTime = null;
     }
 
     function onStart(appState) {
+        restoreTimerState();
     }
 
     function onStop(appState) {
-        stopTimer();
     }
-
+    
     function getInitialView() {
         var view = new PomodoroView(self);
         var delegate = new PomodoroDelegate(self);
@@ -59,12 +61,10 @@ class PomodoroApp extends Application.AppBase {
     
     function setWorkTime(minutes) {
         workTime = minutes;
-        Application.Properties.setValue("workTime", minutes);
     }
     
     function setBreakTime(minutes) {
         breakTime = minutes;
-        Application.Properties.setValue("breakTime", minutes);
     }
     
     function getHistoryArray() {
@@ -130,14 +130,13 @@ class PomodoroApp extends Application.AppBase {
         } else {
             history[today] = 1;
         }
-        
-        Application.Properties.setValue("history", history);
     }
     
     function startWork() {
         stopTimer();
         state = :working;
         remainingSeconds = workTime * 60;
+        saveTimerState();
         startTimer();
         WatchUi.requestUpdate();
     }
@@ -146,12 +145,14 @@ class PomodoroApp extends Application.AppBase {
         stopTimer();
         state = :breakTime;
         remainingSeconds = breakTime * 60;
+        saveTimerState();
         startTimer();
         WatchUi.requestUpdate();
     }
     
     function stopTimer() {
         timer.stop();
+        clearTimerState();
     }
     
     function startTimer() {
@@ -169,10 +170,12 @@ class PomodoroApp extends Application.AppBase {
                 addCompletedPomodoro();
                 state = :breakTime;
                 remainingSeconds = breakTime * 60;
+                saveTimerState();
                 startTimer();
             } else if (state == :breakTime) {
                 state = :idle;
                 remainingSeconds = workTime * 60;
+                clearTimerState();
             }
         }
         
@@ -203,6 +206,72 @@ class PomodoroApp extends Application.AppBase {
     
     function pushSettingsMenu() {
         WatchUi.pushView(new SettingsView(self), new SettingsDelegate(self), WatchUi.SLIDE_IMMEDIATE);
+    }
+    
+    function saveTimerState() {
+        var storage = Application.Storage;
+        if (storage != null) {
+            storage.setValue("timerState", state.toString());
+            storage.setValue("timerDuration", remainingSeconds);
+            storage.setValue("timerStartTime", Time.now().value());
+        }
+    }
+    
+    function clearTimerState() {
+        var storage = Application.Storage;
+        if (storage != null) {
+            storage.deleteValue("timerState");
+            storage.deleteValue("timerDuration");
+            storage.deleteValue("timerStartTime");
+        }
+    }
+    
+    function restoreTimerState() {
+        var storage = Application.Storage;
+        if (storage == null) {
+            return;
+        }
+        
+        var timerState = storage.getValue("timerState");
+        var timerDuration = storage.getValue("timerDuration");
+        var timerStartTime = storage.getValue("timerStartTime");
+        
+        if (timerState != null && timerDuration != null && timerStartTime != null) {
+            var now = Time.now().value();
+            var elapsed = now - timerStartTime;
+            
+            if (elapsed < timerDuration) {
+                remainingSeconds = timerDuration - elapsed;
+                
+                if (timerState.equals("working")) {
+                    state = :working;
+                } else if (timerState.equals("break")) {
+                    state = :breakTime;
+                }
+                
+                startTimer();
+            } else {
+                var excess = elapsed - timerDuration;
+                
+                if (timerState.equals("working")) {
+                    addCompletedPomodoro();
+                    state = :breakTime;
+                    remainingSeconds = breakTime * 60;
+                    
+                    if (excess < breakTime * 60) {
+                        remainingSeconds = (breakTime * 60) - excess;
+                        startTimer();
+                    }
+                } else if (timerState.equals("break")) {
+                    state = :idle;
+                    remainingSeconds = workTime * 60;
+                }
+                
+                clearTimerState();
+            }
+            
+            WatchUi.requestUpdate();
+        }
     }
 }
 
