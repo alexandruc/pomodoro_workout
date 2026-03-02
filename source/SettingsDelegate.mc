@@ -1,13 +1,13 @@
 using Toybox.WatchUi;
 
-class SettingsDelegate extends WatchUi.InputDelegate {
+class SettingsDelegate extends WatchUi.BehaviorDelegate {
     private var app;
     private var view;
     
     function initialize(a) {
         app = a;
         view = null;
-        InputDelegate.initialize();
+        BehaviorDelegate.initialize();
     }
     
     function setView(v) {
@@ -18,7 +18,7 @@ class SettingsDelegate extends WatchUi.InputDelegate {
         var key = keyEvent.getKey();
         var v = view;
         
-        if (v == null) {
+        if (v == null || !(v instanceof SettingsView)) {
             return false;
         }
         
@@ -43,12 +43,16 @@ class SettingsDelegate extends WatchUi.InputDelegate {
         if (key == WatchUi.KEY_ENTER or key == WatchUi.KEY_START) {
             if (selected == 0) {
                 var current = app.getWorkTime();
-                if (current < 60) {
+                if (current >= 60) {
+                    app.setWorkTime(5);
+                } else {
                     app.setWorkTime(current + 5);
                 }
             } else if (selected == 1) {
                 var current = app.getBreakTime();
-                if (current < 30) {
+                if (current >= 30) {
+                    app.setBreakTime(1);
+                } else {
                     app.setBreakTime(current + 1);
                 }
             } else if (selected == 2) {
@@ -67,12 +71,16 @@ class SettingsDelegate extends WatchUi.InputDelegate {
         if (key == WatchUi.KEY_MENU) {
             if (selected == 0) {
                 var current = app.getWorkTime();
-                if (current > 5) {
+                if (current <= 5) {
+                    app.setWorkTime(60);
+                } else {
                     app.setWorkTime(current - 5);
                 }
             } else if (selected == 1) {
                 var current = app.getBreakTime();
-                if (current > 1) {
+                if (current <= 1) {
+                    app.setBreakTime(30);
+                } else {
                     app.setBreakTime(current - 1);
                 }
             }

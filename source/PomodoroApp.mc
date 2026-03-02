@@ -62,6 +62,10 @@ class PomodoroApp extends Application.AppBase {
     
     function setWorkTime(minutes) {
         workTime = minutes;
+        if (state == :idle) {
+            remainingSeconds = workTime * 60;
+            WatchUi.requestUpdate();
+        }
     }
     
     function setBreakTime(minutes) {
@@ -206,7 +210,10 @@ class PomodoroApp extends Application.AppBase {
     }
     
     function pushSettingsMenu() {
-        WatchUi.pushView(new SettingsView(self), new SettingsDelegate(self), WatchUi.SLIDE_IMMEDIATE);
+        var view = new SettingsView(self);
+        var delegate = new SettingsDelegate(self);
+        delegate.setView(view);
+        WatchUi.pushView(view, delegate, WatchUi.SLIDE_IMMEDIATE);
     }
     
     function saveTimerState() {

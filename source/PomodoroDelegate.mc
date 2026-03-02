@@ -2,7 +2,7 @@ using Toybox.WatchUi;
 using Toybox.System;
 using Toybox.Timer;
 
-class PomodoroDelegate extends WatchUi.InputDelegate {
+class PomodoroDelegate extends WatchUi.BehaviorDelegate {
     private var app;
     private var menuHeld;
     private var holdTimer;
@@ -11,7 +11,7 @@ class PomodoroDelegate extends WatchUi.InputDelegate {
         app = a;
         menuHeld = false;
         holdTimer = new Timer.Timer();
-        InputDelegate.initialize();
+        BehaviorDelegate.initialize();
     }
 
     function onKey(keyEvent) {
@@ -38,10 +38,6 @@ class PomodoroDelegate extends WatchUi.InputDelegate {
         }
         
         return false;
-    }
-    
-    function onKeyPressed(keyEvent) {
-        return onKey(keyEvent);
     }
     
     function onKeyReleased(keyEvent) {
