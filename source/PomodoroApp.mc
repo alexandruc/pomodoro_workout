@@ -5,6 +5,7 @@ using Toybox.Attention;
 using Toybox.Graphics;
 using Toybox.Time;
 using Toybox.Time.Gregorian;
+using Toybox.Background;
 
 class PomodoroApp extends Application.AppBase {
     private var timer;
@@ -50,6 +51,11 @@ class PomodoroApp extends Application.AppBase {
     
     function getGlanceView() {
         return [new GlanceView(self)];
+    }
+    
+    (:background)
+    function getServiceDelegate() {
+        return [new PomodoroServiceDelegate()];
     }
     
     function getWorkTime() {
@@ -155,13 +161,15 @@ class PomodoroApp extends Application.AppBase {
         WatchUi.requestUpdate();
     }
     
-    function stopTimer() {
-        timer.stop();
-        clearTimerState();
-    }
-    
     function startTimer() {
         timer.start(method(:onTimerTick), 1000, true);
+        registerBackgroundEvent();
+    }
+    
+    function stopTimer() {
+        timer.stop();
+        deleteBackgroundEvent();
+        clearTimerState();
     }
     
     function onTimerTick() {
@@ -172,12 +180,14 @@ class PomodoroApp extends Application.AppBase {
             vibrate();
             
             if (state == :working) {
+                sendNotification("Work Done!", "Starting break...");
                 addCompletedPomodoro();
                 state = :breakTime;
                 remainingSeconds = breakTime * 60;
                 saveTimerState();
                 startTimer();
             } else if (state == :breakTime) {
+                sendNotification("Break Done!", "Ready to work?");
                 state = :idle;
                 remainingSeconds = workTime * 60;
                 clearTimerState();
@@ -191,6 +201,12 @@ class PomodoroApp extends Application.AppBase {
         if (Attention has :vibrate) {
             var profile = [new Attention.VibeProfile(100, 1000)];
             Attention.vibrate(profile);
+        }
+    }
+    
+    function sendNotification(title, body) {
+        if (WatchUi has :showToast) {
+            WatchUi.showToast(body, null);
         }
     }
     
@@ -236,6 +252,26 @@ class PomodoroApp extends Application.AppBase {
                 storage.deleteValue("timerStartTime");
             }
         }
+    }
+    
+    function registerBackgroundEvent() {
+        if (Background has :registerForTemporalEvent) {
+            Background.registerForTemporalEvent(new Time.Duration(60));
+        }
+    }
+    
+    function deleteBackgroundEvent() {
+        if (Background has :deleteTemporalEvent) {
+            Background.deleteTemporalEvent();
+        }
+    }
+    
+    function decrementRemainingSeconds() {
+        remainingSeconds = remainingSeconds - 1;
+    }
+    
+    function triggerForegroundUpdate() {
+        WatchUi.requestUpdate();
     }
     
     function restoreTimerState() {
