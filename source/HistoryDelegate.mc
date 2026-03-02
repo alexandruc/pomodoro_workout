@@ -1,8 +1,8 @@
 using Toybox.WatchUi;
 
-class HistoryDelegate extends WatchUi.InputDelegate {
+class HistoryDelegate extends WatchUi.BehaviorDelegate {
     function initialize() {
-        InputDelegate.initialize();
+        BehaviorDelegate.initialize();
     }
 
     function onKey(keyEvent) {
