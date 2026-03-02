@@ -1,0 +1,50 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SDK
+        run: |
+          mkdir -p $HOME/.Garmin/ConnectIQ/Sdks
+          curl -L -o /tmp/connectiq-sdk.zip "https://developer.garmin.com/downloads/connectiq/ConnectIQ_8.4.1_linux.zip"
+          unzip -q /tmp/connectiq-sdk.zip -d $HOME/.Garmin/ConnectIQ/Sdks
+          SDK_DIR=$(ls -d $HOME/.Garmin/ConnectIQ/Sdks/connectiq-sdk-lin-*)
+          echo "SDK_PATH=$SDK_DIR" >> $GITHUB_ENV
+
+      - name: Create developer key
+        run: |
+          echo -n "${{ secrets.DEVELOPER_KEY }}" | base64 -d > $HOME/developer_key
+
+      - name: Build for fenix3
+        run: |
+          cd pomodoro_workout
+          $SDK_PATH/bin/monkeyc -f monkey.jungle \
+            -d fenix3 \
+            -y $HOME/developer_key \
+            -o bin/pomodoro_workout_fenix3.prg
+
+      - name: Build for fr970
+        run: |
+          cd pomodoro_workout
+          $SDK_PATH/bin/monkeyc -f monkey.jungle \
+            -d fr970 \
+            -y $HOME/developer_key \
+            -o bin/pomodoro_workout_fr970.prg
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pomodoro-workout-prg
+          path: |
+            pomodoro_workout/bin/pomodoro_workout_fenix3.prg
+            pomodoro_workout/bin/pomodoro_workout_fr970.prg
