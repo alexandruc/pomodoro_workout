@@ -292,9 +292,9 @@ class PomodoroApp extends Application.AppBase {
                 if (elapsed < timerDuration) {
                     remainingSeconds = timerDuration - elapsed;
                     
-                    if (timerState.equals("working")) {
+                    if (timerState.equals(":working")) {
                         state = :working;
-                    } else if (timerState.equals("break")) {
+                    } else if (timerState.equals(":breakTime")) {
                         state = :breakTime;
                     }
                     
@@ -302,7 +302,7 @@ class PomodoroApp extends Application.AppBase {
                 } else {
                     var excess = elapsed - timerDuration;
                     
-                    if (timerState.equals("working")) {
+                    if (timerState.equals(":working")) {
                         addCompletedPomodoro();
                         state = :breakTime;
                         remainingSeconds = breakTime * 60;
@@ -311,7 +311,7 @@ class PomodoroApp extends Application.AppBase {
                             remainingSeconds = (breakTime * 60) - excess;
                             startTimer();
                         }
-                    } else if (timerState.equals("break")) {
+                    } else if (timerState.equals(":breakTime")) {
                         state = :idle;
                         remainingSeconds = workTime * 60;
                     }
