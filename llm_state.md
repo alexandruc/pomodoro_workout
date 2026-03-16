@@ -12,7 +12,24 @@ Pomodoro Workout app for Garmin Connect IQ - fully implemented with background t
 
 ## Recent Actions
 
-1. **Settings Menu** - Added configurable work/break times via long-press MENU:
+1. **Background Timer Fix** - Fixed "Module 'Toybox.Timer' not available to 'Background'" error:
+   - Changed timer from early initialization to lazy initialization
+   - Timer now created in `startTimer()` only when needed
+   - Prevents crash when background service loads app class
+
+2. **Background Event Period** - Fixed "cannot be less than 5 minutes" error:
+   - Changed background event from 60s to 300s (5 minutes)
+   - Background delegate now decrements by 300 seconds each event
+   - Foreground timer continues to tick every second for accuracy
+
+3. **WatchUi Permission** - Fixed "Permission for module 'Toybox.WatchUi' required":
+   - Added check for WatchUi availability before calling requestUpdate()
+   - Prevents crash when onStart() runs in background context
+
+4. **Timer Null Check** - Fixed "Failed invoking <symbol>" error:
+   - Removed global `using Toybox.Timer;` import (causes issues in background)
+   - Now checking `Toybox.Timer has :Timer` before using Timer
+   - Added null and method availability checks for extra safety
    - Work time: 5-60 minutes (5 min steps)
    - Break time: 1-30 minutes (1 min steps)
    - Values wrap around at max/min

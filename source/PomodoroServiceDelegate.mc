@@ -17,26 +17,22 @@ class PomodoroServiceDelegate extends System.ServiceDelegate {
             var state = app.getState();
             
             if (state == :working or state == :breakTime) {
-                var remaining = app.getRemainingSeconds();
-                
-                if (remaining <= 0) {
-                    app.onTimerTick();
-                } else {
+                for (var i = 0; i < 300; i++) {
                     app.decrementRemainingSeconds();
-                    app.saveTimerState();
-                    
-                    if (app.getRemainingSeconds() <= 0) {
-                        vibrate();
-                        
-                        if (state == :working) {
-                            app.sendNotification("Work Done!", "Starting break...");
-                        } else if (state == :breakTime) {
-                            app.sendNotification("Break Done!", "Ready to work?");
-                        }
-                    }
-                    
-                    app.triggerForegroundUpdate();
                 }
+                app.saveTimerState();
+                
+                if (app.getRemainingSeconds() <= 0) {
+                    vibrate();
+                    
+                    if (state == :working) {
+                        app.sendNotification("Work Done!", "Starting break...");
+                    } else if (state == :breakTime) {
+                        app.sendNotification("Break Done!", "Ready to work?");
+                    }
+                }
+                
+                app.triggerForegroundUpdate();
             }
         }
         
