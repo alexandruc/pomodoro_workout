@@ -24,42 +24,53 @@ class SettingsView extends WatchUi.View {
         var workTime = app.getWorkTime();
         var breakTime = app.getBreakTime();
         
+        var screenWidth = dc.getWidth();
+        var screenHeight = dc.getHeight();
+        
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
         dc.clear();
         
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-        dc.drawText(dc.getWidth() / 2, 10, Graphics.FONT_SMALL, "Settings", Graphics.TEXT_JUSTIFY_CENTER);
         
-        var y = 50;
-        var spacing = 40;
+        var titleFont = Graphics.FONT_TINY;
+        var itemFont = Graphics.FONT_TINY;
+        var helpFont = Graphics.FONT_TINY;
+        
+        var isRound = (dc has :getRadius) ? (dc.getRadius() > 0) : false;
+        var centerX = screenWidth / 2;
+        
+        var titleY = screenHeight * 0.05;
+        var itemY = screenHeight * 0.18;
+        var spacing = screenHeight * 0.12;
+        
+        dc.drawText(centerX, titleY, titleFont, "Settings", Graphics.TEXT_JUSTIFY_CENTER);
         
         if (selectedItem == 0) {
             dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_BLACK);
         } else {
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         }
-        dc.drawText(20, y, Graphics.FONT_SMALL, "Work: " + workTime + " min", Graphics.TEXT_JUSTIFY_LEFT);
+        dc.drawText(centerX, itemY, itemFont, "Work: " + workTime + " min", Graphics.TEXT_JUSTIFY_CENTER);
         
-        y = y + spacing;
+        itemY = itemY + spacing;
         
         if (selectedItem == 1) {
             dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_BLACK);
         } else {
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         }
-        dc.drawText(20, y, Graphics.FONT_SMALL, "Break: " + breakTime + " min", Graphics.TEXT_JUSTIFY_LEFT);
+        dc.drawText(centerX, itemY, itemFont, "Break: " + breakTime + " min", Graphics.TEXT_JUSTIFY_CENTER);
         
-        y = y + spacing;
+        itemY = itemY + spacing;
         
         if (selectedItem == 2) {
             dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_BLACK);
         } else {
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         }
-        dc.drawText(20, y, Graphics.FONT_SMALL, "History", Graphics.TEXT_JUSTIFY_LEFT);
+        dc.drawText(centerX, itemY, itemFont, "History", Graphics.TEXT_JUSTIFY_CENTER);
         
-        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_BLACK);
-        dc.drawText(dc.getWidth() / 2, dc.getHeight() - 20, Graphics.FONT_TINY, "UP/DN: select  +/-: change", Graphics.TEXT_JUSTIFY_CENTER);
+            
     }
     
     function getSelectedItem() {
