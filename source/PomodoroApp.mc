@@ -6,6 +6,7 @@ using Toybox.Graphics;
 using Toybox.Time;
 using Toybox.Time.Gregorian;
 using Toybox.Background;
+using Toybox.System;
 
 class PomodoroApp extends Application.AppBase {
     private var timer;
@@ -22,7 +23,6 @@ class PomodoroApp extends Application.AppBase {
     
     function initialize() {
         AppBase.initialize();
-        timer = new Timer.Timer();
         state = :idle;
         
         // test values for faster testing
@@ -33,6 +33,7 @@ class PomodoroApp extends Application.AppBase {
         remainingSeconds = workTime * 60;
         timerDelegate = null;
         endTime = null;
+        timer = null;
     }
 
     function onStart(appState) {
@@ -162,12 +163,21 @@ class PomodoroApp extends Application.AppBase {
     }
     
     function startTimer() {
-        timer.start(method(:onTimerTick), 1000, true);
+        if (!(System has :ServiceLogin)) {
+            if (timer == null) {
+                timer = new Timer.Timer();
+            }
+            if (timer has :start) {
+                timer.start(method(:onTimerTick), 1000, true);
+            }
+        }
         registerBackgroundEvent();
     }
     
     function stopTimer() {
-        timer.stop();
+        if (timer != null and timer has :stop) {
+            timer.stop();
+        }
         deleteBackgroundEvent();
         clearTimerState();
     }
@@ -176,7 +186,9 @@ class PomodoroApp extends Application.AppBase {
         remainingSeconds = remainingSeconds - 1;
         
         if (remainingSeconds <= 0) {
-            timer.stop();
+            if (timer != null and timer has :stop) {
+                timer.stop();
+            }
             vibrate();
             
             if (state == :working) {
@@ -256,7 +268,7 @@ class PomodoroApp extends Application.AppBase {
     
     function registerBackgroundEvent() {
         if (Background has :registerForTemporalEvent) {
-            Background.registerForTemporalEvent(new Time.Duration(60));
+            Background.registerForTemporalEvent(new Time.Duration(300));
         }
     }
     
@@ -298,7 +310,7 @@ class PomodoroApp extends Application.AppBase {
                         state = :breakTime;
                     }
                     
-                    startTimer();
+                    registerBackgroundEvent();
                 } else {
                     var excess = elapsed - timerDuration;
                     
@@ -309,7 +321,7 @@ class PomodoroApp extends Application.AppBase {
                         
                         if (excess < breakTime * 60) {
                             remainingSeconds = (breakTime * 60) - excess;
-                            startTimer();
+                            registerBackgroundEvent();
                         }
                     } else if (timerState.equals(":breakTime")) {
                         state = :idle;
@@ -318,8 +330,6 @@ class PomodoroApp extends Application.AppBase {
                     
                     clearTimerState();
                 }
-                
-                WatchUi.requestUpdate();
             }
         }
     }
