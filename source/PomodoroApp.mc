@@ -368,7 +368,9 @@ class GlanceView extends WatchUi.GlanceView {
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         dc.clear();
         
-        dc.drawText(dc.getWidth() / 2, dc.getHeight() / 2 - 10, Graphics.FONT_MEDIUM, timeStr, Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(dc.getWidth() / 2, dc.getHeight() / 2 + 20, Graphics.FONT_TINY, status, Graphics.TEXT_JUSTIFY_CENTER);
+        var centerX = dc.getWidth() / 2;
+        var centerY = dc.getHeight() / 2;
+        
+        dc.drawText(centerX, centerY, Graphics.FONT_MEDIUM, timeStr + " - " + status, Graphics.TEXT_JUSTIFY_CENTER);
     }
 }
