@@ -65,7 +65,7 @@ class HistoryView extends WatchUi.View {
             dc.fillRectangle(x, startY - barHeight, barWidth, barHeight);
             
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-            var label = (6 - i + 1).toString();
+            var label = (i + 1).toString();
             dc.drawText(x + barWidth / 2, startY + 2, labelFont, label, Graphics.TEXT_JUSTIFY_CENTER);
         }
         
