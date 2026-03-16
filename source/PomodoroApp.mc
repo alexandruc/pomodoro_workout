@@ -37,7 +37,6 @@ class PomodoroApp extends Application.AppBase {
     }
 
     function onStart(appState) {
-        restoreTimerState();
     }
 
     function onStop(appState) {
@@ -47,6 +46,14 @@ class PomodoroApp extends Application.AppBase {
         var view = new PomodoroView(self);
         var delegate = new PomodoroDelegate(self);
         timerDelegate = delegate;
+        
+        restoreTimerState();
+        
+        if (state == :working or state == :breakTime) {
+            startTimer();
+            WatchUi.requestUpdate();
+        }
+        
         return [view, delegate];
     }
     
@@ -248,7 +255,13 @@ class PomodoroApp extends Application.AppBase {
         if (Application has :Storage) {
             var storage = Application.Storage;
             if (storage != null) {
-                storage.setValue("timerState", state.toString());
+                var stateInt = 0;
+                if (state == :working) {
+                    stateInt = 1;
+                } else if (state == :breakTime) {
+                    stateInt = 2;
+                }
+                storage.setValue("timerState", stateInt);
                 storage.setValue("timerDuration", remainingSeconds);
                 storage.setValue("timerStartTime", Time.now().value());
             }
@@ -304,30 +317,26 @@ class PomodoroApp extends Application.AppBase {
                 if (elapsed < timerDuration) {
                     remainingSeconds = timerDuration - elapsed;
                     
-                    if (timerState.equals(":working")) {
+                    if (timerState == 1) {
                         state = :working;
-                    } else if (timerState.equals(":breakTime")) {
+                    } else if (timerState == 2) {
                         state = :breakTime;
                     }
                     
-                    if (!(System has :ServiceLogin)) {
-                        startTimer();
-                    }
+                    startTimer();
                 } else {
                     var excess = elapsed - timerDuration;
                     
-                    if (timerState.equals(":working")) {
+                    if (timerState == 1) {
                         addCompletedPomodoro();
                         state = :breakTime;
                         remainingSeconds = breakTime * 60;
                         
                         if (excess < breakTime * 60) {
                             remainingSeconds = (breakTime * 60) - excess;
-                            if (!(System has :ServiceLogin)) {
-                                startTimer();
-                            }
+                            startTimer();
                         }
-                    } else if (timerState.equals(":breakTime")) {
+                    } else if (timerState == 2) {
                         state = :idle;
                         remainingSeconds = workTime * 60;
                     }
@@ -369,8 +378,17 @@ class GlanceView extends WatchUi.GlanceView {
         dc.clear();
         
         var centerX = dc.getWidth() / 2;
-        var centerY = dc.getHeight() / 2;
+        var height = dc.getHeight();
         
-        dc.drawText(centerX, centerY, Graphics.FONT_MEDIUM, timeStr + " - " + status, Graphics.TEXT_JUSTIFY_CENTER);
+        var timeFont = Graphics.FONT_MEDIUM;
+        var statusFont = Graphics.FONT_TINY;
+        
+        var timeHeight = dc.getFontHeight(timeFont);
+        var statusHeight = dc.getFontHeight(statusFont);
+        var totalHeight = timeHeight + statusHeight + 5;
+        var startY = (height - totalHeight) / 2;
+        
+        dc.drawText(centerX - 20, startY, timeFont, timeStr, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX + 40, startY + timeHeight / 2 + statusHeight / 2, statusFont, status, Graphics.TEXT_JUSTIFY_CENTER);
     }
 }
