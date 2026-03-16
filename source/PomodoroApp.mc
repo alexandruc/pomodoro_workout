@@ -360,6 +360,8 @@ class GlanceView extends WatchUi.GlanceView {
     }
     
     function onUpdate(dc) {
+        app.restoreTimerState();
+        
         var state = app.getState();
         var seconds = app.getRemainingSeconds();
         
