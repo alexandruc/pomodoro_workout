@@ -310,7 +310,9 @@ class PomodoroApp extends Application.AppBase {
                         state = :breakTime;
                     }
                     
-                    registerBackgroundEvent();
+                    if (!(System has :ServiceLogin)) {
+                        startTimer();
+                    }
                 } else {
                     var excess = elapsed - timerDuration;
                     
@@ -321,7 +323,9 @@ class PomodoroApp extends Application.AppBase {
                         
                         if (excess < breakTime * 60) {
                             remainingSeconds = (breakTime * 60) - excess;
-                            registerBackgroundEvent();
+                            if (!(System has :ServiceLogin)) {
+                                startTimer();
+                            }
                         }
                     } else if (timerState.equals(":breakTime")) {
                         state = :idle;
