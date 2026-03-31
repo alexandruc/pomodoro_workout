@@ -2,64 +2,41 @@
 
 ## Current Task
 
-Pomodoro Workout app for Garmin Connect IQ - fully implemented with background timer support.
+Pomodoro Workout app for Garmin Connect IQ - fully implemented with alarm-style alert dialogs.
 
 ## Project Status
 
 - **Status**: COMPLETED
-- **Build**: SUCCESSFUL
+- **Build**: SUCCESSFUL (fr970)
 - **Output**: `/home/anon/workplace/garmin_apps/projects/pomodoro_workout/bin/pomodoro_workout.prg`
 
 ## Recent Actions
 
-1. **Background Timer Fix** - Fixed "Module 'Toybox.Timer' not available to 'Background'" error:
-   - Changed timer from early initialization to lazy initialization
-   - Timer now created in `startTimer()` only when needed
-   - Prevents crash when background service loads app class
+1. **Alert Dialog System** - Added prominent alarm-style notifications when blocks complete:
+   - **Foreground (app open)**: Shows `WatchUi.Confirmation` dialog with continuous `TONE_ALARM`
+   - **Background (app closed)**: Uses `Background.requestApplicationWake()` to trigger system alarm dialog
+   - When app opens from background wake, `onBackgroundData()` shows Confirmation with alarm tone
+   - User must dismiss dialog to continue (timer auto-starts after dismissal)
 
-2. **Background Event Period** - Fixed "cannot be less than 5 minutes" error:
-   - Changed background event from 60s to 300s (5 minutes)
-   - Background delegate now decrements by 300 seconds each event
-   - Foreground timer continues to tick every second for accuracy
+2. **AlertDelegate.mc** (NEW) - Handles Confirmation dialog dismissal:
+   - Executes next action (:startBreak, :startWork, or :idle) when user dismisses
+   - Auto-stops alarm tone when dialog is dismissed
 
-3. **WatchUi Permission** - Fixed "Permission for module 'Toybox.WatchUi' required":
-   - Added check for WatchUi availability before calling requestUpdate()
-   - Prevents crash when onStart() runs in background context
+3. **Background Service Update**:
+   - Uses `Background.requestApplicationWake()` for system alarm
+   - Passes alert type via `Background.exit()` dictionary
+   - Brief vibration for immediate feedback
+   - Message: "Pomodoro: Work done!" or "Pomodoro: Break done!"
 
-4. **Timer Null Check** - Fixed "Failed invoking <symbol>" error:
-   - Removed global `using Toybox.Timer;` import (causes issues in background)
-   - Now checking `Toybox.Timer has :Timer` before using Timer
-   - Added null and method availability checks for extra safety
-   - Work time: 5-60 minutes (5 min steps)
-   - Break time: 1-30 minutes (1 min steps)
-   - Values wrap around at max/min
-
-2. **Background Service** - Timer continues in background:
-   - `PomodoroServiceDelegate.mc` handles temporal events
-   - Runs every 60 seconds when timer active
-   - Decrements timer and saves state
-   - Vibrates when timer completes
-
-3. **Notifications** - Toast messages on timer completion:
-   - "Starting break..." after work timer
-   - "Ready to work?" after break timer
-   - Uses `WatchUi.showToast()` for widget compatibility
-
-4. **Timer Persistence** - Fixed state restoration:
-   - Timer resumes correctly when returning to widget
-   - Fixed state string comparison (`:working` vs `working`)
-
-5. **GitHub Actions** - CI/CD workflow:
-   - `.github/workflows/build.yml`
-   - Builds for fenix3 and fr970
-   - Provides .prg files as artifacts
+4. **Removed**: `vibrate()` and `sendNotification()` methods (replaced by `showAlertDialog()`)
 
 ## Source Files
 
-- `PomodoroApp.mc` - Main app + GlanceView + background delegate
+- `PomodoroApp.mc` - Main app + GlanceView + onBackgroundData() + showAlertDialog()
 - `PomodoroView.mc` - Timer UI
 - `PomodoroDelegate.mc` - Input handling (long-press for settings)
-- `PomodoroServiceDelegate.mc` - Background temporal events
+- `PomodoroServiceDelegate.mc` - Background temporal events + requestApplicationWake()
+- `AlertDelegate.mc` - NEW: Handles alert dialog dismissal
 - `SettingsView.mc` / `SettingsDelegate.mc` - Settings menu
 - `HistoryView.mc` / `HistoryDelegate.mc` - 7-day history graph
 
@@ -68,6 +45,7 @@ Pomodoro Workout app for Garmin Connect IQ - fully implemented with background t
 - Working directory: `/home/anon/workplace/garmin_apps/projects`
 - SDK location: `/home/anon/.Garmin/ConnectIQ/Sdks/connectiq-sdk-lin-8.4.1-2026-02-03-e9f77eeaa/`
 - Developer key: `/home/anon/workplace/garmin_apps/projects/developer_key`
+- **Default build device**: `fr970`
 
 ## App Type
 

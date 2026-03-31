@@ -42,6 +42,19 @@ class PomodoroApp extends Application.AppBase {
     function onStop(appState) {
     }
     
+    function onBackgroundData(data) {
+        if (data != null and data instanceof Dictionary) {
+            var alertType = data.get("type");
+            
+            if (alertType == "workDone") {
+                addCompletedPomodoro();
+                showAlertDialog("Work Done!", :startBreak);
+            } else if (alertType == "breakDone") {
+                showAlertDialog("Break Done!", :idle);
+            }
+        }
+    }
+    
     function getInitialView() {
         var view = new PomodoroView(self);
         var delegate = new PomodoroDelegate(self);
@@ -196,17 +209,16 @@ class PomodoroApp extends Application.AppBase {
             if (timer != null and timer has :stop) {
                 timer.stop();
             }
-            vibrate();
             
             if (state == :working) {
-                sendNotification("Work Done!", "Starting break...");
                 addCompletedPomodoro();
+                showAlertDialog("Work Done!", :startBreak);
                 state = :breakTime;
                 remainingSeconds = breakTime * 60;
                 saveTimerState();
                 startTimer();
             } else if (state == :breakTime) {
-                sendNotification("Break Done!", "Ready to work?");
+                showAlertDialog("Break Done!", :idle);
                 state = :idle;
                 remainingSeconds = workTime * 60;
                 clearTimerState();
@@ -216,16 +228,14 @@ class PomodoroApp extends Application.AppBase {
         WatchUi.requestUpdate();
     }
     
-    function vibrate() {
-        if (Attention has :vibrate) {
-            var profile = [new Attention.VibeProfile(100, 1000)];
-            Attention.vibrate(profile);
-        }
-    }
-    
-    function sendNotification(title, body) {
-        if (WatchUi has :showToast) {
-            WatchUi.showToast(body, null);
+    function showAlertDialog(message, nextAction) {
+        if (WatchUi has :Confirmation) {
+            if (Attention has :playTone and Attention has :TONE_ALARM) {
+                Attention.playTone(Attention.TONE_ALARM);
+            }
+            
+            var dialog = new WatchUi.Confirmation(message);
+            WatchUi.pushView(dialog, new AlertDelegate(self, nextAction), WatchUi.SLIDE_IMMEDIATE);
         }
     }
     

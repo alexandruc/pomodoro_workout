@@ -2,12 +2,14 @@ using Toybox.Background;
 using Toybox.System;
 using Toybox.Time;
 using Toybox.Attention;
-using Toybox.WatchUi;
 
 (:background)
 class PomodoroServiceDelegate extends System.ServiceDelegate {
+    private var lastState;
+
     function initialize() {
         ServiceDelegate.initialize();
+        lastState = :idle;
     }
 
     function onTemporalEvent() {
@@ -17,18 +19,25 @@ class PomodoroServiceDelegate extends System.ServiceDelegate {
             var state = app.getState();
             
             if (state == :working or state == :breakTime) {
+                lastState = state;
+                
                 for (var i = 0; i < 300; i++) {
                     app.decrementRemainingSeconds();
                 }
                 app.saveTimerState();
                 
                 if (app.getRemainingSeconds() <= 0) {
-                    vibrate();
+                    if (Attention has :vibrate) {
+                        var profile = [new Attention.VibeProfile(100, 500)];
+                        Attention.vibrate(profile);
+                    }
                     
-                    if (state == :working) {
-                        app.sendNotification("Work Done!", "Starting break...");
-                    } else if (state == :breakTime) {
-                        app.sendNotification("Break Done!", "Ready to work?");
+                    if (Background has :requestApplicationWake) {
+                        if (state == :working) {
+                            Background.requestApplicationWake("Pomodoro: Work done!");
+                        } else if (state == :breakTime) {
+                            Background.requestApplicationWake("Pomodoro: Break done!");
+                        }
                     }
                 }
                 
@@ -36,13 +45,8 @@ class PomodoroServiceDelegate extends System.ServiceDelegate {
             }
         }
         
-        Background.exit(null);
-    }
-    
-    function vibrate() {
-        if (Attention has :vibrate) {
-            var profile = [new Attention.VibeProfile(100, 1000)];
-            Attention.vibrate(profile);
-        }
+        Background.exit({
+            "type" => (lastState == :working) ? "workDone" : "breakDone"
+        });
     }
 }

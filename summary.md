@@ -14,8 +14,8 @@ A Pomodoro timer app for Garmin wearable devices that helps users manage work se
 |---------|-------------|
 | **Glance Support** | Shows timer countdown and status (WORK/BREAK/IDLE) in the glance view |
 | **Timer** | Default 25-minute work block followed by 5-minute break |
-| **Vibration** | Vibrates when a work or break block completes |
-| **Toast Notifications** | Shows "Starting break..." and "Ready to work?" messages |
+| **Alert Dialogs** | Alarm-style Confirmation dialog with continuous tone when blocks complete |
+| **System Alarm (Background)** | Uses `Background.requestApplicationWake()` for system alarm when app is closed |
 | **Background Timer** | Timer continues counting when leaving the widget |
 | **Customizable Settings** | Long-press MENU to access settings |
 | **Work Time** | Adjustable 5-60 minutes (default: 25 min) |
@@ -49,11 +49,11 @@ pomodoro_workout/
 │   ├── PomodoroView.mc           # Timer display UI
 │   ├── PomodoroDelegate.mc        # Input handling
 │   ├── PomodoroServiceDelegate.mc # Background temporal events
+│   ├── AlertDelegate.mc           # Alert dialog handler
 │   ├── SettingsView.mc            # Settings screen
-│   ├── SettingsDelegate.mc         # Settings input
+│   ├── SettingsDelegate.mc        # Settings input
 │   ├── HistoryView.mc             # 7-day history graph
-│   ├── HistoryDelegate.mc          # History input
-│   └── Storage.mc                  # Persistent storage
+│   └── HistoryDelegate.mc        # History input
 └── resources/
     ├── strings.xml                # App strings
     ├── drawables.xml              # Icon configuration
@@ -66,7 +66,7 @@ pomodoro_workout/
 ```bash
 cd /home/anon/workplace/garmin_apps/projects/pomodoro_workout
 /home/anon/.Garmin/ConnectIQ/Sdks/connectiq-sdk-lin-8.4.1-2026-02-03-e9f77eeaa/bin/monkeyc \
-  -f monkey.jungle -o bin/pomodoro_workout.prg -d fenix3 \
+  -f monkey.jungle -o bin/pomodoro_workout.prg -d fr970 \
   -y ../developer_key
 ```
 
@@ -88,7 +88,7 @@ The project includes a GitHub Actions workflow (`.github/workflows/build.yml`) t
 
 # Run app
 /home/anon/.Garmin/ConnectIQ/Sdks/connectiq-sdk-lin-8.4.1-2026-02-03-e9f77eeaa/bin/monkeydo \
-  /home/anon/workplace/garmin_apps/projects/pomodoro_workout/bin/pomodoro_workout.prg fenix3
+  /home/anon/workplace/garmin_apps/projects/pomodoro_workout/bin/pomodoro_workout.prg fr970
 ```
 
 ## Technical Details
@@ -98,8 +98,8 @@ The project includes a GitHub Actions workflow (`.github/workflows/build.yml`) t
 - **Language**: Monkey C
 - **Storage**: Application.Storage (persists timer state)
 - **Timer**: Toybox.Timer (1-second interval in foreground)
-- **Background**: Toybox.Background.registerForTemporalEvent (60-second intervals)
-- **Notifications**: WatchUi.showToast() + Toybox.Attention.vibrate()
+- **Background**: Toybox.Background.registerForTemporalEvent (5-minute intervals)
+- **Alert System**: WatchUi.Confirmation + Attention.TONE_ALARM (foreground), Background.requestApplicationWake() (background)
 
 ## Supported Devices
 
