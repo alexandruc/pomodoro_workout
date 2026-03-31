@@ -5,6 +5,8 @@ using Toybox.Attention;
 using Toybox.Graphics;
 using Toybox.Time;
 using Toybox.Time.Gregorian;
+using Toybox.Background;
+using Toybox.System;
 
 class PomodoroApp extends Application.AppBase {
     private var timer;
@@ -21,7 +23,6 @@ class PomodoroApp extends Application.AppBase {
     
     function initialize() {
         AppBase.initialize();
-        timer = new Timer.Timer();
         state = :idle;
         
         // test values for faster testing
@@ -32,10 +33,10 @@ class PomodoroApp extends Application.AppBase {
         remainingSeconds = workTime * 60;
         timerDelegate = null;
         endTime = null;
+        timer = null;
     }
 
     function onStart(appState) {
-        restoreTimerState();
     }
 
     function onStop(appState) {
@@ -45,11 +46,24 @@ class PomodoroApp extends Application.AppBase {
         var view = new PomodoroView(self);
         var delegate = new PomodoroDelegate(self);
         timerDelegate = delegate;
+        
+        restoreTimerState();
+        
+        if (state == :working or state == :breakTime) {
+            startTimer();
+            WatchUi.requestUpdate();
+        }
+        
         return [view, delegate];
     }
     
     function getGlanceView() {
         return [new GlanceView(self)];
+    }
+    
+    (:background)
+    function getServiceDelegate() {
+        return [new PomodoroServiceDelegate()];
     }
     
     function getWorkTime() {
@@ -155,29 +169,44 @@ class PomodoroApp extends Application.AppBase {
         WatchUi.requestUpdate();
     }
     
-    function stopTimer() {
-        timer.stop();
-        clearTimerState();
+    function startTimer() {
+        if (!(System has :ServiceLogin)) {
+            if (timer == null) {
+                timer = new Timer.Timer();
+            }
+            if (timer has :start) {
+                timer.start(method(:onTimerTick), 1000, true);
+            }
+        }
+        registerBackgroundEvent();
     }
     
-    function startTimer() {
-        timer.start(method(:onTimerTick), 1000, true);
+    function stopTimer() {
+        if (timer != null and timer has :stop) {
+            timer.stop();
+        }
+        deleteBackgroundEvent();
+        clearTimerState();
     }
     
     function onTimerTick() {
         remainingSeconds = remainingSeconds - 1;
         
         if (remainingSeconds <= 0) {
-            timer.stop();
+            if (timer != null and timer has :stop) {
+                timer.stop();
+            }
             vibrate();
             
             if (state == :working) {
+                sendNotification("Work Done!", "Starting break...");
                 addCompletedPomodoro();
                 state = :breakTime;
                 remainingSeconds = breakTime * 60;
                 saveTimerState();
                 startTimer();
             } else if (state == :breakTime) {
+                sendNotification("Break Done!", "Ready to work?");
                 state = :idle;
                 remainingSeconds = workTime * 60;
                 clearTimerState();
@@ -191,6 +220,12 @@ class PomodoroApp extends Application.AppBase {
         if (Attention has :vibrate) {
             var profile = [new Attention.VibeProfile(100, 1000)];
             Attention.vibrate(profile);
+        }
+    }
+    
+    function sendNotification(title, body) {
+        if (WatchUi has :showToast) {
+            WatchUi.showToast(body, null);
         }
     }
     
@@ -220,7 +255,13 @@ class PomodoroApp extends Application.AppBase {
         if (Application has :Storage) {
             var storage = Application.Storage;
             if (storage != null) {
-                storage.setValue("timerState", state.toString());
+                var stateInt = 0;
+                if (state == :working) {
+                    stateInt = 1;
+                } else if (state == :breakTime) {
+                    stateInt = 2;
+                }
+                storage.setValue("timerState", stateInt);
                 storage.setValue("timerDuration", remainingSeconds);
                 storage.setValue("timerStartTime", Time.now().value());
             }
@@ -236,6 +277,26 @@ class PomodoroApp extends Application.AppBase {
                 storage.deleteValue("timerStartTime");
             }
         }
+    }
+    
+    function registerBackgroundEvent() {
+        if (Background has :registerForTemporalEvent) {
+            Background.registerForTemporalEvent(new Time.Duration(300));
+        }
+    }
+    
+    function deleteBackgroundEvent() {
+        if (Background has :deleteTemporalEvent) {
+            Background.deleteTemporalEvent();
+        }
+    }
+    
+    function decrementRemainingSeconds() {
+        remainingSeconds = remainingSeconds - 1;
+    }
+    
+    function triggerForegroundUpdate() {
+        WatchUi.requestUpdate();
     }
     
     function restoreTimerState() {
@@ -256,9 +317,9 @@ class PomodoroApp extends Application.AppBase {
                 if (elapsed < timerDuration) {
                     remainingSeconds = timerDuration - elapsed;
                     
-                    if (timerState.equals("working")) {
+                    if (timerState == 1) {
                         state = :working;
-                    } else if (timerState.equals("break")) {
+                    } else if (timerState == 2) {
                         state = :breakTime;
                     }
                     
@@ -266,7 +327,7 @@ class PomodoroApp extends Application.AppBase {
                 } else {
                     var excess = elapsed - timerDuration;
                     
-                    if (timerState.equals("working")) {
+                    if (timerState == 1) {
                         addCompletedPomodoro();
                         state = :breakTime;
                         remainingSeconds = breakTime * 60;
@@ -275,15 +336,13 @@ class PomodoroApp extends Application.AppBase {
                             remainingSeconds = (breakTime * 60) - excess;
                             startTimer();
                         }
-                    } else if (timerState.equals("break")) {
+                    } else if (timerState == 2) {
                         state = :idle;
                         remainingSeconds = workTime * 60;
                     }
                     
                     clearTimerState();
                 }
-                
-                WatchUi.requestUpdate();
             }
         }
     }
@@ -301,6 +360,8 @@ class GlanceView extends WatchUi.GlanceView {
     }
     
     function onUpdate(dc) {
+        app.restoreTimerState();
+        
         var state = app.getState();
         var seconds = app.getRemainingSeconds();
         
@@ -318,7 +379,18 @@ class GlanceView extends WatchUi.GlanceView {
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         dc.clear();
         
-        dc.drawText(dc.getWidth() / 2, dc.getHeight() / 2 - 10, Graphics.FONT_MEDIUM, timeStr, Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(dc.getWidth() / 2, dc.getHeight() / 2 + 20, Graphics.FONT_TINY, status, Graphics.TEXT_JUSTIFY_CENTER);
+        var centerX = dc.getWidth() / 2;
+        var height = dc.getHeight();
+        
+        var timeFont = Graphics.FONT_MEDIUM;
+        var statusFont = Graphics.FONT_TINY;
+        
+        var timeHeight = dc.getFontHeight(timeFont);
+        var statusHeight = dc.getFontHeight(statusFont);
+        var totalHeight = timeHeight + statusHeight + 5;
+        var startY = (height - totalHeight) / 2;
+        
+        dc.drawText(centerX - 20, startY, timeFont, timeStr, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX + 40, startY + timeHeight / 2 + statusHeight / 2, statusFont, status, Graphics.TEXT_JUSTIFY_CENTER);
     }
 }

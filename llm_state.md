@@ -2,7 +2,7 @@
 
 ## Current Task
 
-Completed the implementation of a Pomodoro Workout app for Garmin Connect IQ platform.
+Pomodoro Workout app for Garmin Connect IQ - fully implemented with background timer support.
 
 ## Project Status
 
@@ -12,21 +12,56 @@ Completed the implementation of a Pomodoro Workout app for Garmin Connect IQ pla
 
 ## Recent Actions
 
-1. Created project structure for `pomodoro_workout` app
-2. Implemented all source files:
-   - PomodoroApp.mc (main app + GlanceView)
-   - PomodoroView.mc (timer UI)
-   - PomodoroDelegate.mc (input handling)
-   - SettingsView.mc / SettingsDelegate.mc (settings menu)
-   - HistoryView.mc / HistoryDelegate.mc (7-day history graph)
-   - Storage.mc (persistent storage)
-3. Created resources (strings.xml, drawables.xml, launcher icon)
-4. Fixed multiple compilation errors related to:
-   - Storage module (static functions, Time.Gregorian API)
-   - Graphics constants (COLOR_GRAY → COLOR_DK_GRAY)
-   - Menu initialization
-   - GlanceView return type
-5. Successfully built the project
+1. **Background Timer Fix** - Fixed "Module 'Toybox.Timer' not available to 'Background'" error:
+   - Changed timer from early initialization to lazy initialization
+   - Timer now created in `startTimer()` only when needed
+   - Prevents crash when background service loads app class
+
+2. **Background Event Period** - Fixed "cannot be less than 5 minutes" error:
+   - Changed background event from 60s to 300s (5 minutes)
+   - Background delegate now decrements by 300 seconds each event
+   - Foreground timer continues to tick every second for accuracy
+
+3. **WatchUi Permission** - Fixed "Permission for module 'Toybox.WatchUi' required":
+   - Added check for WatchUi availability before calling requestUpdate()
+   - Prevents crash when onStart() runs in background context
+
+4. **Timer Null Check** - Fixed "Failed invoking <symbol>" error:
+   - Removed global `using Toybox.Timer;` import (causes issues in background)
+   - Now checking `Toybox.Timer has :Timer` before using Timer
+   - Added null and method availability checks for extra safety
+   - Work time: 5-60 minutes (5 min steps)
+   - Break time: 1-30 minutes (1 min steps)
+   - Values wrap around at max/min
+
+2. **Background Service** - Timer continues in background:
+   - `PomodoroServiceDelegate.mc` handles temporal events
+   - Runs every 60 seconds when timer active
+   - Decrements timer and saves state
+   - Vibrates when timer completes
+
+3. **Notifications** - Toast messages on timer completion:
+   - "Starting break..." after work timer
+   - "Ready to work?" after break timer
+   - Uses `WatchUi.showToast()` for widget compatibility
+
+4. **Timer Persistence** - Fixed state restoration:
+   - Timer resumes correctly when returning to widget
+   - Fixed state string comparison (`:working` vs `working`)
+
+5. **GitHub Actions** - CI/CD workflow:
+   - `.github/workflows/build.yml`
+   - Builds for fenix3 and fr970
+   - Provides .prg files as artifacts
+
+## Source Files
+
+- `PomodoroApp.mc` - Main app + GlanceView + background delegate
+- `PomodoroView.mc` - Timer UI
+- `PomodoroDelegate.mc` - Input handling (long-press for settings)
+- `PomodoroServiceDelegate.mc` - Background temporal events
+- `SettingsView.mc` / `SettingsDelegate.mc` - Settings menu
+- `HistoryView.mc` / `HistoryDelegate.mc` - 7-day history graph
 
 ## Current Context
 
@@ -34,11 +69,10 @@ Completed the implementation of a Pomodoro Workout app for Garmin Connect IQ pla
 - SDK location: `/home/anon/.Garmin/ConnectIQ/Sdks/connectiq-sdk-lin-8.4.1-2026-02-03-e9f77eeaa/`
 - Developer key: `/home/anon/workplace/garmin_apps/projects/developer_key`
 
-## Next Steps (if needed)
+## App Type
 
-- Test app in simulator
-- Add more features (e.g., background timer, notifications)
-- Export for device deployment
+- Type: `widget` (for broad compatibility)
+- Permissions: `Background`
 
 ## Mode
 

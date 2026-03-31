@@ -21,17 +21,26 @@ class HistoryView extends WatchUi.View {
     function onUpdate(dc) {
         var history = app.getHistoryArray();
         
+        var screenWidth = dc.getWidth();
+        var screenHeight = dc.getHeight();
+        
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
         dc.clear();
         
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-        dc.drawText(dc.getWidth() / 2, 5, Graphics.FONT_SMALL, "7-Day History", Graphics.TEXT_JUSTIFY_CENTER);
+        var titleFont = Graphics.FONT_TINY;
+        var labelFont = Graphics.FONT_TINY;
+        var totalFont = Graphics.FONT_TINY;
         
-        var chartWidth = dc.getWidth() - 40;
-        var chartHeight = 80;
+        var centerX = screenWidth / 2;
+        
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
+        dc.drawText(centerX, screenHeight * 0.08, titleFont, "7-Day History", Graphics.TEXT_JUSTIFY_CENTER);
+        
+        var chartWidth = screenWidth * 0.7;
+        var chartHeight = screenHeight * 0.35;
         var barWidth = chartWidth / 7 - 4;
-        var startX = 20;
-        var startY = dc.getHeight() - 40;
+        var startX = screenWidth * 0.15;
+        var startY = screenHeight * 0.70;
         
         var maxVal = 1;
         for (var i = 0; i < history.size(); i++) {
@@ -56,8 +65,8 @@ class HistoryView extends WatchUi.View {
             dc.fillRectangle(x, startY - barHeight, barWidth, barHeight);
             
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-            var label = (6 - i + 1).toString();
-            dc.drawText(x + barWidth / 2, startY + 3, Graphics.FONT_TINY, label, Graphics.TEXT_JUSTIFY_CENTER);
+            var label = (i + 1).toString();
+            dc.drawText(x + barWidth / 2, startY + 2, labelFont, label, Graphics.TEXT_JUSTIFY_CENTER);
         }
         
         var total = 0;
@@ -66,6 +75,6 @@ class HistoryView extends WatchUi.View {
         }
         
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-        dc.drawText(dc.getWidth() / 2, dc.getHeight() - 15, Graphics.FONT_TINY, "Total: " + total, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, startY + 60, totalFont, "Total: " + total, Graphics.TEXT_JUSTIFY_CENTER);
     }
 }
