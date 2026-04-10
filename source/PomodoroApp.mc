@@ -43,12 +43,17 @@ class PomodoroApp extends Application.AppBase {
     }
     
     function onBackgroundData(data) {
+        restoreTimerState();
+        
         if (data != null and data instanceof Dictionary) {
             var alertType = data.get("type");
             
             if (alertType == "workDone") {
-                addCompletedPomodoro();
-                showAlertDialog("Work Done!", :startBreak);
+                if (state == :idle) {
+                    showAlertDialog("Break Done!", :idle);
+                } else {
+                    showAlertDialog("Work Done!", :startBreak);
+                }
             } else if (alertType == "breakDone") {
                 showAlertDialog("Break Done!", :idle);
             }
@@ -324,7 +329,7 @@ class PomodoroApp extends Application.AppBase {
                 var now = Time.now().value();
                 var elapsed = now - timerStartTime;
                 
-                if (elapsed < timerDuration) {
+                if (elapsed <= timerDuration) {
                     remainingSeconds = timerDuration - elapsed;
                     
                     if (timerState == 1) {
@@ -339,22 +344,59 @@ class PomodoroApp extends Application.AppBase {
                     
                     if (timerState == 1) {
                         addCompletedPomodoro();
-                        state = :breakTime;
-                        remainingSeconds = breakTime * 60;
                         
-                        if (excess < breakTime * 60) {
+                        if (excess >= breakTime * 60) {
+                            state = :idle;
+                            remainingSeconds = workTime * 60;
+                            clearTimerState();
+                        } else {
+                            state = :breakTime;
                             remainingSeconds = (breakTime * 60) - excess;
                             startTimer();
                         }
                     } else if (timerState == 2) {
                         state = :idle;
                         remainingSeconds = workTime * 60;
+                        clearTimerState();
                     }
-                    
-                    clearTimerState();
                 }
             }
         }
+    }
+    
+    function recalculateRemainingSeconds() {
+        if (Application has :Storage) {
+            var storage = Application.Storage;
+            if (storage == null) {
+                return remainingSeconds;
+            }
+            
+            var timerState = storage.getValue("timerState");
+            var timerDuration = storage.getValue("timerDuration");
+            var timerStartTime = storage.getValue("timerStartTime");
+            
+            if (timerState != null && timerDuration != null && timerStartTime != null) {
+                var now = Time.now().value();
+                var elapsed = now - timerStartTime;
+                
+                if (elapsed <= timerDuration) {
+                    return timerDuration - elapsed;
+                } else {
+                    var excess = elapsed - timerDuration;
+                    
+                    if (timerState == 1) {
+                        if (excess >= breakTime * 60) {
+                            return 0;
+                        } else {
+                            return (breakTime * 60) - excess;
+                        }
+                    } else if (timerState == 2) {
+                        return 0;
+                    }
+                }
+            }
+        }
+        return remainingSeconds;
     }
 }
 
