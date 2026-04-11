@@ -48,6 +48,7 @@ class PomodoroApp extends Application.AppBase {
         if (state == :working or state == :breakTime) {
             saveTimerState();
         }
+        saveHistory();
     }
     
     function getInitialView() {
@@ -328,7 +329,30 @@ class PomodoroApp extends Application.AppBase {
         }
     }
     
+    function saveHistory() {
+        if (Application has :Storage) {
+            var storage = Application.Storage;
+            if (storage != null) {
+                storage.setValue("history", history);
+            }
+        }
+    }
+    
+    function loadHistory() {
+        if (Application has :Storage) {
+            var storage = Application.Storage;
+            if (storage != null) {
+                var savedHistory = storage.getValue("history");
+                if (savedHistory != null) {
+                    history = savedHistory;
+                }
+            }
+        }
+    }
+    
     function restoreTimerState() {
+        loadHistory();
+        
         if (Application has :Storage) {
             var storage = Application.Storage;
             if (storage == null) {
