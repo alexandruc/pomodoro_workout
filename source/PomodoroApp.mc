@@ -7,6 +7,7 @@ using Toybox.Time;
 using Toybox.Time.Gregorian;
 using Toybox.Background;
 using Toybox.System;
+using Toybox.Notifications;
 
 class PomodoroApp extends Application.AppBase {
     private var timer;
@@ -14,6 +15,11 @@ class PomodoroApp extends Application.AppBase {
     private var remainingSeconds;
     private var timerDelegate;
     private var endTime;
+    private var pendingAlert;
+    private var mainView;
+    private var mainDelegate;
+    private var alertView;
+    private var completedBlockType;
     
     private var workTime;
     private var breakTime;
@@ -24,9 +30,11 @@ class PomodoroApp extends Application.AppBase {
     function initialize() {
         AppBase.initialize();
         state = :idle;
+        pendingAlert = null;
+        completedBlockType = null;
         
         // test values for faster testing
-        workTime = 5;
+        workTime = 2;
         breakTime = 1;
         history = createEmptyHistory();
         
@@ -34,12 +42,37 @@ class PomodoroApp extends Application.AppBase {
         timerDelegate = null;
         endTime = null;
         timer = null;
+        
+        if (Notifications has :registerForNotificationMessages) {
+            Notifications.registerForNotificationMessages(method(:onNotification));
+        }
     }
 
     function onStart(appState) {
+        if (pendingAlert != null) {
+            var alertMsg = pendingAlert;
+            pendingAlert = null;
+            showAlertDialog(alertMsg);
+        }
     }
 
     function onStop(appState) {
+    }
+    
+    function onNotification(message as Notifications.NotificationMessage) as Void {
+        if (message.type == Notifications.NOTIFICATION_MESSAGE_TYPE_SELECTED) {
+            var action = message.action;
+            
+            if (action == 0) {
+                pendingAlert = null;
+                startWork();
+            } else if (action == 1) {
+                pendingAlert = null;
+                startBreak();
+            }
+        } else if (message.type == Notifications.NOTIFICATION_MESSAGE_TYPE_DISMISSED) {
+            completedBlockType = null;
+        }
     }
     
     function onBackgroundData(data) {
@@ -49,13 +82,9 @@ class PomodoroApp extends Application.AppBase {
             var alertType = data.get("type");
             
             if (alertType == "workDone") {
-                if (state == :idle) {
-                    showAlertDialog("Break Done!", :idle);
-                } else {
-                    showAlertDialog("Work Done!", :startBreak);
-                }
+                pendingAlert = "Work Done!";
             } else if (alertType == "breakDone") {
-                showAlertDialog("Break Done!", :idle);
+                pendingAlert = "Break Done!";
             }
         }
     }
@@ -64,12 +93,20 @@ class PomodoroApp extends Application.AppBase {
         var view = new PomodoroView(self);
         var delegate = new PomodoroDelegate(self);
         timerDelegate = delegate;
+        mainView = view;
+        mainDelegate = delegate;
         
         restoreTimerState();
         
         if (state == :working or state == :breakTime) {
             startTimer();
             WatchUi.requestUpdate();
+        }
+        
+        if (pendingAlert != null) {
+            var alertMsg = pendingAlert;
+            pendingAlert = null;
+            showAlertDialog(alertMsg);
         }
         
         return [view, delegate];
@@ -90,6 +127,10 @@ class PomodoroApp extends Application.AppBase {
     
     function getBreakTime() {
         return breakTime;
+    }
+    
+    function setCompletedBlockType(type) {
+        completedBlockType = type;
     }
     
     function setWorkTime(minutes) {
@@ -221,40 +262,58 @@ class PomodoroApp extends Application.AppBase {
                     var workProfile = [new Attention.VibeProfile(200, 1000)];
                     Attention.vibrate(workProfile);
                 }
-                showAlertDialog("Work Done!", :startBreak);
-                state = :breakTime;
-                remainingSeconds = breakTime * 60;
-                saveTimerState();
-                startTimer();
+                completedBlockType = :work;
+                showAlertDialog("Work Done!");
             } else if (state == :breakTime) {
                 if (Attention has :vibrate) {
                     var breakProfile = [new Attention.VibeProfile(200, 1000)];
                     Attention.vibrate(breakProfile);
                 }
-                showAlertDialog("Break Done!", :idle);
-                state = :idle;
-                remainingSeconds = workTime * 60;
-                clearTimerState();
+                completedBlockType = :break;
+                showAlertDialog("Break Done!");
             }
         }
         
         WatchUi.requestUpdate();
     }
     
-    function showAlertDialog(message, nextAction) {
-        if (WatchUi has :Confirmation) {
-            if (Attention has :vibrate) {
-                var profile = [new Attention.VibeProfile(100, 500)];
-                Attention.vibrate(profile);
-            }
-            
-            if (Attention has :playTone and Attention has :TONE_ALARM) {
-                Attention.playTone(Attention.TONE_ALARM);
-            }
-            
-            var dialog = new WatchUi.Confirmation(message);
-            WatchUi.pushView(dialog, new AlertDelegate(self, nextAction), WatchUi.SLIDE_IMMEDIATE);
+    function showAlertDialog(message) {
+        if (Attention has :vibrate) {
+            var profile = [new Attention.VibeProfile(100, 500)];
+            Attention.vibrate(profile);
         }
+        
+        if (Attention has :playTone and Attention has :TONE_ALARM) {
+            Attention.playTone(Attention.TONE_ALARM);
+        }
+        
+        alertView = new AlertView(self, message);
+        var alertDelegate = new AlertDelegate(self, alertView, mainView, mainDelegate);
+        WatchUi.switchToView(alertView, alertDelegate, WatchUi.SLIDE_IMMEDIATE);
+    }
+    
+    function handleAlertChoice(choice) {
+        if (completedBlockType == :work) {
+            if (choice == :startWork) {
+                startWork();
+            } else if (choice == :startBreak) {
+                startBreak();
+            } else {
+                state = :idle;
+                remainingSeconds = workTime * 60;
+                clearTimerState();
+            }
+        } else if (completedBlockType == :break) {
+            if (choice == :startWork) {
+                startWork();
+            } else if (choice == :startBreak) {
+                startBreak();
+            } else {
+                state = :idle;
+                remainingSeconds = workTime * 60;
+            }
+        }
+        completedBlockType = null;
     }
     
     function getState() {

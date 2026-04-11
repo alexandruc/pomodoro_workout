@@ -1,7 +1,8 @@
 using Toybox.Background;
 using Toybox.System;
 using Toybox.Time;
-using Toybox.Attention;
+using Toybox.Lang;
+using Toybox.Notifications;
 
 (:background)
 class PomodoroServiceDelegate extends System.ServiceDelegate {
@@ -22,17 +23,29 @@ class PomodoroServiceDelegate extends System.ServiceDelegate {
                 lastState = state;
                 
                 if (app.recalculateRemainingSeconds() <= 0) {
-                    if (Attention has :vibrate) {
-                        var profile = [new Attention.VibeProfile(100, 500)];
-                        Attention.vibrate(profile);
+                    if (state == :working) {
+                        app.setCompletedBlockType(:work);
+                    } else if (state == :breakTime) {
+                        app.setCompletedBlockType(:break);
                     }
                     
-                    if (Background has :requestApplicationWake) {
-                        if (state == :working) {
-                            Background.requestApplicationWake("Pomodoro: Work done!");
-                        } else if (state == :breakTime) {
-                            Background.requestApplicationWake("Pomodoro: Break done!");
+                    if (Notifications has :showNotification) {
+                        var title = "Pomodoro";
+                        var subTitle = "Work Done!";
+                        if (state == :breakTime) {
+                            subTitle = "Break Done!";
                         }
+                        
+                        var options = {
+                            :body => "Tap to start a new block",
+                            :actions => [
+                                {:label => "Start Work", :data => 0},
+                                {:label => "Start Break", :data => 1}
+                            ] as Lang.Array<Notifications.Action>,
+                            :dismissPrevious => true
+                        };
+                        
+                        Notifications.showNotification(title, subTitle, options);
                     }
                 }
                 
