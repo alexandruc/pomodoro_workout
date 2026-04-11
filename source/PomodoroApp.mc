@@ -49,6 +49,7 @@ class PomodoroApp extends Application.AppBase {
             saveTimerState();
         }
         saveHistory();
+        saveSettings();
     }
     
     function getInitialView() {
@@ -350,7 +351,34 @@ class PomodoroApp extends Application.AppBase {
         }
     }
     
+    function saveSettings() {
+        if (Application has :Storage) {
+            var storage = Application.Storage;
+            if (storage != null) {
+                storage.setValue("workTime", workTime);
+                storage.setValue("breakTime", breakTime);
+            }
+        }
+    }
+    
+    function loadSettings() {
+        if (Application has :Storage) {
+            var storage = Application.Storage;
+            if (storage != null) {
+                var savedWorkTime = storage.getValue("workTime");
+                var savedBreakTime = storage.getValue("breakTime");
+                if (savedWorkTime != null) {
+                    workTime = savedWorkTime;
+                }
+                if (savedBreakTime != null) {
+                    breakTime = savedBreakTime;
+                }
+            }
+        }
+    }
+    
     function restoreTimerState() {
+        loadSettings();
         loadHistory();
         
         if (Application has :Storage) {

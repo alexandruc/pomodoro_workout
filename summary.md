@@ -4,22 +4,18 @@
 
 A Pomodoro timer app for Garmin wearable devices that helps users manage work sessions with customizable work and break intervals.
 
-## Project Location
-
-`/home/anon/workplace/garmin_apps/projects/pomodoro_workout/`
-
 ## Features
 
 | Feature | Description |
 |---------|-------------|
-| **Glance Support** | Shows timer countdown and status (WORK/BREAK/IDLE) in the glance view |
-| **Timer** | Default 25-minute work block followed by 5-minute break |
-| **Alert Dialogs** | Alarm-style Confirmation dialog with continuous tone when blocks complete |
-| **System Alarm (Background)** | Uses `Background.requestApplicationWake()` for system alarm when app is closed |
-| **Background Timer** | Timer continues counting when leaving the widget |
+| **Time of Day** | Clock display (HH:MM:SS) above the timer |
+| **Timer** | Customizable work/break blocks with visual countdown |
+| **Alert Popup** | Custom popup with Start Work / Start Break / Dismiss options when blocks complete |
+| **Timer Resume** | Timer stops when exiting app, resumes from saved position when returning |
+| **State Persistence** | Work time, break time, and history are saved when exiting app |
 | **Customizable Settings** | Long-press MENU to access settings |
-| **Work Time** | Adjustable 5-60 minutes (default: 25 min) |
-| **Break Time** | Adjustable 1-30 minutes (default: 5 min) |
+| **Work Time** | Adjustable duration (default: 25 min) |
+| **Break Time** | Adjustable duration (default: 5 min) |
 | **History** | 7-day bar graph showing completed work blocks |
 
 ## Controls
@@ -29,86 +25,79 @@ A Pomodoro timer app for Garmin wearable devices that helps users manage work se
 | **START / ENTER** | Start a work block immediately |
 | **DOWN** | Stop/reset timer |
 | **MENU (long-press)** | Open settings menu |
+| **UP/DOWN** (on alert) | Navigate between options |
+| **ENTER** (on alert) | Select option |
+| **ESC/BACK** (on alert) | Dismiss and return to main screen |
 
 ## Settings Menu
 
-- **Work Time**: Set work duration (5-60 min, wraps around)
-- **Break Time**: Set break duration (1-30 min, wraps around)
+- **Work Time**: Set work duration (wraps around)
+- **Break Time**: Set break duration (wraps around)
 - **History**: View 7-day completion graph
 
 ## Project Structure
 
 ```
 pomodoro_workout/
-├── manifest.xml                   # App manifest (widget type)
+├── manifest.xml                   # App manifest (watch-app type)
 ├── monkey.jungle                  # Build configuration
-├── .github/workflows/
-│   └── build.yml                 # CI/CD workflow
 ├── source/
-│   ├── PomodoroApp.mc            # Main app class + GlanceView
-│   ├── PomodoroView.mc           # Timer display UI
+│   ├── PomodoroApp.mc            # Main app class
+│   ├── PomodoroView.mc           # Timer display UI with time of day
 │   ├── PomodoroDelegate.mc        # Input handling
-│   ├── PomodoroServiceDelegate.mc # Background temporal events
-│   ├── AlertDelegate.mc           # Alert dialog handler
+│   ├── AlertView.mc              # Custom alert popup view
+│   ├── AlertDelegate.mc           # Alert popup input handling
 │   ├── SettingsView.mc            # Settings screen
 │   ├── SettingsDelegate.mc        # Settings input
-│   ├── HistoryView.mc             # 7-day history graph
+│   ├── HistoryView.mc            # 7-day history graph
 │   └── HistoryDelegate.mc        # History input
 └── resources/
     ├── strings.xml                # App strings
     ├── drawables.xml              # Icon configuration
     └── images/
-        └── launcher_icon.png      # Tomato icon
+        └── launcher_icon.png      # App icon
 ```
 
 ## Build
 
 ```bash
-cd /home/anon/workplace/garmin_apps/projects/pomodoro_workout
-/home/anon/.Garmin/ConnectIQ/Sdks/connectiq-sdk-lin-8.4.1-2026-02-03-e9f77eeaa/bin/monkeyc \
-  -f monkey.jungle -o bin/pomodoro_workout.prg -d fr970 \
-  -y ../developer_key
+# For FR970
+monkeyc -f pomodoro_workout/monkey.jungle -o pomodoro_workout/bin/pomodoro_workout.prg -d fr970 -y developer_key
+
+# For FR570
+monkeyc -f pomodoro_workout/monkey.jungle -o pomodoro_workout/bin/pomodoro_workout.prg -d fr57047mm -y developer_key
 ```
-
-## GitHub Actions CI/CD
-
-The project includes a GitHub Actions workflow (`.github/workflows/build.yml`) that:
-- Builds for `fenix3` and `fr970` devices on push/PR to main
-- Uploads `.prg` files as artifacts
-
-**Required secrets:**
-- `DEVELOPER_KEY` - Developer key (base64 encoded)
-- `SDK_ZIP_BASE64` - Connect IQ SDK (base64 encoded)
 
 ## Run in Simulator
 
 ```bash
-# Start simulator (requires GUI)
-/home/anon/.Garmin/ConnectIQ/Sdks/connectiq-sdk-lin-8.4.1-2026-02-03-e9f77eeaa/bin/simulator &
+# Launch simulator
+open "/Users/<username>/Library/Application Support/Garmin/ConnectIQ/Sdks/connectiq-sdk-mac-9.1.0-2026-03-09-6a872a80b/bin/ConnectIQ.app"
 
 # Run app
-/home/anon/.Garmin/ConnectIQ/Sdks/connectiq-sdk-lin-8.4.1-2026-02-03-e9f77eeaa/bin/monkeydo \
-  /home/anon/workplace/garmin_apps/projects/pomodoro_workout/bin/pomodoro_workout.prg fr970
+monkeydo pomodoro_workout/bin/pomodoro_workout.prg fr970
 ```
 
 ## Technical Details
 
-- **App Type**: Widget (with glance + background support)
-- **SDK Version**: Connect IQ 8.4.1
+- **App Type**: Watch App (standalone)
+- **SDK Version**: Connect IQ 9.1.0
 - **Language**: Monkey C
-- **Storage**: Application.Storage (persists timer state)
-- **Timer**: Toybox.Timer (1-second interval in foreground)
-- **Background**: Toybox.Background.registerForTemporalEvent (5-minute intervals)
-- **Alert System**: WatchUi.Confirmation + Attention.TONE_ALARM (foreground), Background.requestApplicationWake() (background)
+- **Storage**: Application.Storage (persists timer state, settings, history)
+- **Timer**: Toybox.Timer (1-second interval)
+- **Alert System**: Custom AlertView popup with vibration and alarm tone
+
+## State Persistence
+
+When user exits app:
+- Timer stops at current position
+- Work time, break time, and history are saved
+- State is restored when user returns
 
 ## Supported Devices
 
-- Fenix 3, 6 series
-- Vivoactive 4/5 series
-- Forerunner 245/255/945/955/965/970 series
-- Instinct 2 series
-- Edge 530/540/830/840 series
-- MARQ Gen 2 series
+- Forerunner 570 (fr57047mm)
+- Forerunner 970 (fr970)
 
 ## Build Output
 
