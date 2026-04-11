@@ -1,5 +1,7 @@
 using Toybox.WatchUi;
 using Toybox.Graphics;
+using Toybox.System;
+using Toybox.Time;
 
 class PomodoroView extends WatchUi.View {
     private var app;
@@ -52,12 +54,28 @@ class PomodoroView extends WatchUi.View {
         var statusHeight = dc.getFontHeight(statusFont);
         var hintFont = Graphics.FONT_TINY;
         var hintHeight = dc.getFontHeight(hintFont);
+        var todFont = Graphics.FONT_TINY;
+        var todHeight = dc.getFontHeight(todFont);
+        
+        var clockTime = System.getClockTime();
+        var todStr = Lang.format("$1$:$2$:$3$", [
+            clockTime.hour.format("%02d"),
+            clockTime.min.format("%02d"),
+            clockTime.sec.format("%02d")
+        ]);
         
         var centerY = height / 2;
+        var labelY = centerY - timeHeight / 2 - todHeight * 2 - 10;
+        var todY = centerY - timeHeight / 2 - todHeight - 5;
         var timeY = centerY - timeHeight / 2;
         var statusY = timeY + timeHeight / 2 + statusHeight / 2 + 30;
         var hintY = statusY + statusHeight / 2 + hintHeight / 2 + 10;
         
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_BLACK);
+        dc.drawText(width / 2, labelY, todFont, "Time of day", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(width / 2, todY, todFont, todStr, Graphics.TEXT_JUSTIFY_CENTER);
+        
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         dc.drawText(width / 2, timeY, timeFont, timeStr, Graphics.TEXT_JUSTIFY_CENTER);
         
         dc.setColor(statusColor, Graphics.COLOR_BLACK);

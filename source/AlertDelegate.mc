@@ -70,6 +70,7 @@ class AlertDelegate extends WatchUi.BehaviorDelegate {
         if (Attention has :backing) {
             Attention.backing(false);
         }
+        app.handleAlertChoice(:dismiss);
         returnToMainView();
     }
     

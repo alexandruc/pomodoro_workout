@@ -5,17 +5,15 @@ using Toybox.Attention;
 using Toybox.Graphics;
 using Toybox.Time;
 using Toybox.Time.Gregorian;
-using Toybox.Background;
 using Toybox.System;
-using Toybox.Notifications;
 
 class PomodoroApp extends Application.AppBase {
     private var timer;
+    private var clockTimer;
     private var state;
     private var remainingSeconds;
     private var timerDelegate;
     private var endTime;
-    private var pendingAlert;
     private var mainView;
     private var mainDelegate;
     private var alertView;
@@ -30,10 +28,8 @@ class PomodoroApp extends Application.AppBase {
     function initialize() {
         AppBase.initialize();
         state = :idle;
-        pendingAlert = null;
         completedBlockType = null;
         
-        // test values for faster testing
         workTime = 2;
         breakTime = 1;
         history = createEmptyHistory();
@@ -42,50 +38,15 @@ class PomodoroApp extends Application.AppBase {
         timerDelegate = null;
         endTime = null;
         timer = null;
-        
-        if (Notifications has :registerForNotificationMessages) {
-            Notifications.registerForNotificationMessages(method(:onNotification));
-        }
+        clockTimer = null;
     }
 
     function onStart(appState) {
-        if (pendingAlert != null) {
-            var alertMsg = pendingAlert;
-            pendingAlert = null;
-            showAlertDialog(alertMsg);
-        }
     }
 
     function onStop(appState) {
-    }
-    
-    function onNotification(message as Notifications.NotificationMessage) as Void {
-        if (message.type == Notifications.NOTIFICATION_MESSAGE_TYPE_SELECTED) {
-            var action = message.action;
-            
-            if (action == 0) {
-                pendingAlert = null;
-                startWork();
-            } else if (action == 1) {
-                pendingAlert = null;
-                startBreak();
-            }
-        } else if (message.type == Notifications.NOTIFICATION_MESSAGE_TYPE_DISMISSED) {
-            completedBlockType = null;
-        }
-    }
-    
-    function onBackgroundData(data) {
-        restoreTimerState();
-        
-        if (data != null and data instanceof Dictionary) {
-            var alertType = data.get("type");
-            
-            if (alertType == "workDone") {
-                pendingAlert = "Work Done!";
-            } else if (alertType == "breakDone") {
-                pendingAlert = "Break Done!";
-            }
+        if (state == :working or state == :breakTime) {
+            saveTimerState();
         }
     }
     
@@ -97,28 +58,35 @@ class PomodoroApp extends Application.AppBase {
         mainDelegate = delegate;
         
         restoreTimerState();
+        startClockTimer();
         
         if (state == :working or state == :breakTime) {
             startTimer();
             WatchUi.requestUpdate();
         }
         
-        if (pendingAlert != null) {
-            var alertMsg = pendingAlert;
-            pendingAlert = null;
-            showAlertDialog(alertMsg);
-        }
-        
         return [view, delegate];
     }
     
-    function getGlanceView() {
-        return [new GlanceView(self)];
+    function startClockTimer() {
+        if (!(System has :ServiceLogin)) {
+            if (clockTimer == null) {
+                clockTimer = new Timer.Timer();
+            }
+            if (clockTimer has :start) {
+                clockTimer.start(method(:onClockTick), 1000, true);
+            }
+        }
     }
     
-    (:background)
-    function getServiceDelegate() {
-        return [new PomodoroServiceDelegate()];
+    function stopClockTimer() {
+        if (clockTimer != null and clockTimer has :stop) {
+            clockTimer.stop();
+        }
+    }
+    
+    function onClockTick() {
+        WatchUi.requestUpdate();
     }
     
     function getWorkTime() {
@@ -127,10 +95,6 @@ class PomodoroApp extends Application.AppBase {
     
     function getBreakTime() {
         return breakTime;
-    }
-    
-    function setCompletedBlockType(type) {
-        completedBlockType = type;
     }
     
     function setWorkTime(minutes) {
@@ -237,14 +201,12 @@ class PomodoroApp extends Application.AppBase {
                 timer.start(method(:onTimerTick), 1000, true);
             }
         }
-        registerBackgroundEvent();
     }
     
     function stopTimer() {
         if (timer != null and timer has :stop) {
             timer.stop();
         }
-        deleteBackgroundEvent();
         clearTimerState();
     }
     
@@ -366,26 +328,6 @@ class PomodoroApp extends Application.AppBase {
         }
     }
     
-    function registerBackgroundEvent() {
-        if (Background has :registerForTemporalEvent) {
-            Background.registerForTemporalEvent(new Time.Duration(300));
-        }
-    }
-    
-    function deleteBackgroundEvent() {
-        if (Background has :deleteTemporalEvent) {
-            Background.deleteTemporalEvent();
-        }
-    }
-    
-    function decrementRemainingSeconds() {
-        remainingSeconds = remainingSeconds - 1;
-    }
-    
-    function triggerForegroundUpdate() {
-        WatchUi.requestUpdate();
-    }
-    
     function restoreTimerState() {
         if (Application has :Storage) {
             var storage = Application.Storage;
@@ -409,112 +351,12 @@ class PomodoroApp extends Application.AppBase {
                     } else if (timerState == 2) {
                         state = :breakTime;
                     }
-                    
-                    startTimer();
                 } else {
-                    var excess = elapsed - timerDuration;
-                    
-                    if (timerState == 1) {
-                        addCompletedPomodoro();
-                        
-                        if (excess >= breakTime * 60) {
-                            state = :idle;
-                            remainingSeconds = workTime * 60;
-                            clearTimerState();
-                        } else {
-                            state = :breakTime;
-                            remainingSeconds = (breakTime * 60) - excess;
-                            startTimer();
-                        }
-                    } else if (timerState == 2) {
-                        state = :idle;
-                        remainingSeconds = workTime * 60;
-                        clearTimerState();
-                    }
+                    state = :idle;
+                    remainingSeconds = workTime * 60;
+                    clearTimerState();
                 }
             }
         }
-    }
-    
-    function recalculateRemainingSeconds() {
-        if (Application has :Storage) {
-            var storage = Application.Storage;
-            if (storage == null) {
-                return remainingSeconds;
-            }
-            
-            var timerState = storage.getValue("timerState");
-            var timerDuration = storage.getValue("timerDuration");
-            var timerStartTime = storage.getValue("timerStartTime");
-            
-            if (timerState != null && timerDuration != null && timerStartTime != null) {
-                var now = Time.now().value();
-                var elapsed = now - timerStartTime;
-                
-                if (elapsed <= timerDuration) {
-                    return timerDuration - elapsed;
-                } else {
-                    var excess = elapsed - timerDuration;
-                    
-                    if (timerState == 1) {
-                        if (excess >= breakTime * 60) {
-                            return 0;
-                        } else {
-                            return (breakTime * 60) - excess;
-                        }
-                    } else if (timerState == 2) {
-                        return 0;
-                    }
-                }
-            }
-        }
-        return remainingSeconds;
-    }
-}
-
-class GlanceView extends WatchUi.GlanceView {
-    private var app;
-    
-    function initialize(a) {
-        app = a;
-        GlanceView.initialize();
-    }
-    
-    function onLayout(dc) {
-    }
-    
-    function onUpdate(dc) {
-        app.restoreTimerState();
-        
-        var state = app.getState();
-        var seconds = app.getRemainingSeconds();
-        
-        var minutes = seconds / 60;
-        var secs = seconds % 60;
-        var timeStr = Lang.format("$1$:$2$", [minutes.format("%02d"), secs.format("%02d")]);
-        
-        var status = "IDLE";
-        if (state == :working) {
-            status = "WORK";
-        } else if (state == :breakTime) {
-            status = "BREAK";
-        }
-        
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-        dc.clear();
-        
-        var centerX = dc.getWidth() / 2;
-        var height = dc.getHeight();
-        
-        var timeFont = Graphics.FONT_MEDIUM;
-        var statusFont = Graphics.FONT_TINY;
-        
-        var timeHeight = dc.getFontHeight(timeFont);
-        var statusHeight = dc.getFontHeight(statusFont);
-        var totalHeight = timeHeight + statusHeight + 5;
-        var startY = (height - totalHeight) / 2;
-        
-        dc.drawText(centerX - 20, startY, timeFont, timeStr, Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(centerX + 40, startY + timeHeight / 2 + statusHeight / 2, statusFont, status, Graphics.TEXT_JUSTIFY_CENTER);
     }
 }
