@@ -217,12 +217,20 @@ class PomodoroApp extends Application.AppBase {
             
             if (state == :working) {
                 addCompletedPomodoro();
+                if (Attention has :vibrate) {
+                    var workProfile = [new Attention.VibeProfile(200, 1000)];
+                    Attention.vibrate(workProfile);
+                }
                 showAlertDialog("Work Done!", :startBreak);
                 state = :breakTime;
                 remainingSeconds = breakTime * 60;
                 saveTimerState();
                 startTimer();
             } else if (state == :breakTime) {
+                if (Attention has :vibrate) {
+                    var breakProfile = [new Attention.VibeProfile(200, 1000)];
+                    Attention.vibrate(breakProfile);
+                }
                 showAlertDialog("Break Done!", :idle);
                 state = :idle;
                 remainingSeconds = workTime * 60;
@@ -235,6 +243,11 @@ class PomodoroApp extends Application.AppBase {
     
     function showAlertDialog(message, nextAction) {
         if (WatchUi has :Confirmation) {
+            if (Attention has :vibrate) {
+                var profile = [new Attention.VibeProfile(100, 500)];
+                Attention.vibrate(profile);
+            }
+            
             if (Attention has :playTone and Attention has :TONE_ALARM) {
                 Attention.playTone(Attention.TONE_ALARM);
             }
