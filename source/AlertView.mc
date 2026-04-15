@@ -47,7 +47,7 @@ class AlertView extends WatchUi.View {
             
             if (selectedItem == i) {
                 dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_BLACK);
-                dc.drawText(centerX - 40, y, optionFont, ">", Graphics.TEXT_JUSTIFY_LEFT);
+                dc.drawText(width * 0.25, y, optionFont, ">", Graphics.TEXT_JUSTIFY_LEFT);
             } else {
                 dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_BLACK);
             }

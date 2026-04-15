@@ -47,8 +47,19 @@ class PomodoroView extends WatchUi.View {
         var width = dc.getWidth();
         var height = dc.getHeight();
         
-        var timeFont = Graphics.FONT_NUMBER_THAI_HOT;
-        var statusFont = Graphics.FONT_SMALL;
+        var timeFont;
+        var statusFont;
+        
+        if (width <= 218) {
+            timeFont = Graphics.FONT_NUMBER_MEDIUM;
+            statusFont = Graphics.FONT_TINY;
+        } else if (width <= 260) {
+            timeFont = Graphics.FONT_NUMBER_THAI_HOT;
+            statusFont = Graphics.FONT_TINY;
+        } else {
+            timeFont = Graphics.FONT_NUMBER_THAI_HOT;
+            statusFont = Graphics.FONT_SMALL;
+        }
         
         var timeHeight = dc.getFontHeight(timeFont);
         var statusHeight = dc.getFontHeight(statusFont);
@@ -65,11 +76,11 @@ class PomodoroView extends WatchUi.View {
         ]);
         
         var centerY = height / 2;
-        var labelY = centerY - timeHeight / 2 - todHeight * 2 - 10;
-        var todY = centerY - timeHeight / 2 - todHeight - 5;
+        var labelY = centerY - timeHeight / 2 - todHeight * 2 - (height * 0.02);
+        var todY = centerY - timeHeight / 2 - todHeight - (height * 0.01);
         var timeY = centerY - timeHeight / 2;
-        var statusY = timeY + timeHeight / 2 + statusHeight / 2 + 30;
-        var hintY = statusY + statusHeight / 2 + hintHeight / 2 + 10;
+        var statusY = timeY + timeHeight / 2 + statusHeight / 2 + (height * 0.06);
+        var hintY = statusY + statusHeight / 2 + hintHeight / 2 + (height * 0.02);
         
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
         dc.drawText(width / 2, labelY, todFont, "Time of day", Graphics.TEXT_JUSTIFY_CENTER);

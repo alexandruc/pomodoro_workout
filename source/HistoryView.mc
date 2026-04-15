@@ -75,6 +75,6 @@ class HistoryView extends WatchUi.View {
         }
         
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-        dc.drawText(centerX, startY + 60, totalFont, "Total: " + total, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, startY + (screenHeight * 0.12), totalFont, "Total: " + total, Graphics.TEXT_JUSTIFY_CENTER);
     }
 }
