@@ -225,6 +225,8 @@ class PomodoroApp extends Application.AppBase {
                 if (Attention has :vibrate) {
                     var workProfile = [new Attention.VibeProfile(200, 1000)];
                     Attention.vibrate(workProfile);
+                    var vibTimer = new Timer.Timer();
+                    vibTimer.start(method(:onWorkVibrateSecond), 1200, false);
                 }
                 completedBlockType = :work;
                 showAlertDialog("Work Done!");
@@ -239,6 +241,13 @@ class PomodoroApp extends Application.AppBase {
         }
         
         WatchUi.requestUpdate();
+    }
+    
+    function onWorkVibrateSecond() as Void {
+        if (Attention has :vibrate) {
+            var workProfile = [new Attention.VibeProfile(200, 1000)];
+            Attention.vibrate(workProfile);
+        }
     }
     
     function showAlertDialog(message) {
