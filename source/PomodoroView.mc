@@ -71,7 +71,7 @@ class PomodoroView extends WatchUi.View {
         var statusY = timeY + timeHeight / 2 + statusHeight / 2 + 30;
         var hintY = statusY + statusHeight / 2 + hintHeight / 2 + 10;
         
-        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_BLACK);
+        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
         dc.drawText(width / 2, labelY, todFont, "Time of day", Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(width / 2, todY, todFont, todStr, Graphics.TEXT_JUSTIFY_CENTER);
         
@@ -81,7 +81,7 @@ class PomodoroView extends WatchUi.View {
         dc.setColor(statusColor, Graphics.COLOR_BLACK);
         dc.drawText(width / 2, statusY, statusFont, status, Graphics.TEXT_JUSTIFY_CENTER);
         
-        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_BLACK);
+        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
         
         if (state == :idle) {
             dc.drawText(width / 2, hintY, hintFont, "START to work", Graphics.TEXT_JUSTIFY_CENTER);

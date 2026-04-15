@@ -384,6 +384,7 @@ class PomodoroApp extends Application.AppBase {
         if (Application has :Storage) {
             var storage = Application.Storage;
             if (storage == null) {
+                remainingSeconds = workTime * 60;
                 return;
             }
             
@@ -408,7 +409,11 @@ class PomodoroApp extends Application.AppBase {
                     remainingSeconds = workTime * 60;
                     clearTimerState();
                 }
+            } else {
+                remainingSeconds = workTime * 60;
             }
+        } else {
+            remainingSeconds = workTime * 60;
         }
     }
 }
