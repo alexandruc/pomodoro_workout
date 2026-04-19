@@ -82,6 +82,10 @@ class PomodoroView extends WatchUi.View {
         var statusY = timeY + timeHeight / 2 + statusHeight / 2 + (height * 0.06);
         var hintY = statusY + statusHeight / 2 + hintHeight / 2 + (height * 0.02);
         
+        var purple = 0x9900FF;
+        var line1Y = todY + todHeight + (timeY - (todY + todHeight)) / 2;
+        var line2Y = statusY + statusHeight + (hintY - (statusY + statusHeight)) / 2;
+        
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
         dc.drawText(width / 2, labelY, todFont, "Time of day", Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(width / 2, todY, todFont, todStr, Graphics.TEXT_JUSTIFY_CENTER);
@@ -89,8 +93,14 @@ class PomodoroView extends WatchUi.View {
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         dc.drawText(width / 2, timeY, timeFont, timeStr, Graphics.TEXT_JUSTIFY_CENTER);
         
+        dc.setColor(purple, Graphics.COLOR_BLACK);
+        dc.drawLine(width * 0.2, line1Y, width * 0.8, line1Y);
+        
         dc.setColor(statusColor, Graphics.COLOR_BLACK);
         dc.drawText(width / 2, statusY, statusFont, status, Graphics.TEXT_JUSTIFY_CENTER);
+        
+        dc.setColor(purple, Graphics.COLOR_BLACK);
+        dc.drawLine(width * 0.2, line2Y, width * 0.8, line2Y);
         
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
         
