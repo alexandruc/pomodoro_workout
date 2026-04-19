@@ -22,6 +22,7 @@ class PomodoroApp extends Application.AppBase {
     private var workTime;
     private var breakTime;
     private var history;
+    private var weekStartDate;
     
     const HISTORY_DAYS = 7;
     
@@ -30,9 +31,10 @@ class PomodoroApp extends Application.AppBase {
         state = :idle;
         completedBlockType = null;
         
-        workTime = 5;
+        workTime = 2;
         breakTime = 1;
         history = createEmptyHistory();
+        weekStartDate = getWeekStartDate();
         
         remainingSeconds = workTime * 60;
         timerDelegate = null;
@@ -112,18 +114,24 @@ class PomodoroApp extends Application.AppBase {
     }
     
     function getHistoryArray() {
-        var today = getTodayKey();
+        var currentWeekStart = getWeekStartDate();
         var result = new [HISTORY_DAYS];
         
         for (var i = 0; i < HISTORY_DAYS; i++) {
-            var dayKey = today - i;
-            if (dayKey % 100 > 28) {
-                dayKey = dayKey - 72;
-            }
+            var dayKey = currentWeekStart + i;
             result[i] = history.hasKey(dayKey) ? history[dayKey] : 0;
         }
         
         return result;
+    }
+    
+    function checkAndResetWeek() {
+        var currentWeekStart = getWeekStartDate();
+        if (weekStartDate != currentWeekStart) {
+            weekStartDate = currentWeekStart;
+            history = createEmptyHistory();
+            saveHistory();
+        }
     }
     
     function getTodayKey() {
@@ -131,11 +139,45 @@ class PomodoroApp extends Application.AppBase {
         return info.year * 10000 + info.month * 100 + info.day;
     }
     
+    function getTodayWeekdayIndex() {
+        var info = Gregorian.info(Time.now(), Time.FORMAT_SHORT);
+        var day = info.day_of_week;
+        return day == 1 ? 6 : day - 2;
+    }
+    
+    function getWeekStartDate() {
+        var now = Time.now();
+        var info = Gregorian.info(now, Time.FORMAT_SHORT);
+        var weekday = info.day_of_week;
+        var todayKey = getTodayKey();
+        var daysSinceMonday = weekday == 1 ? 6 : weekday - 2;
+        var startKey = todayKey - daysSinceMonday;
+        if (startKey % 100 < 1) {
+            var month = info.month - 1;
+            var year = info.year;
+            if (month < 1) {
+                month = 12;
+                year = year - 1;
+            }
+            var daysInPrevMonth = getDaysInMonth(year, month);
+            startKey = year * 10000 + month * 100 + daysInPrevMonth + (startKey % 100);
+        }
+        return startKey;
+    }
+    
+    function getDaysInMonth(year, month) {
+        var days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        if (month == 2 and year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)) {
+            return 29;
+        }
+        return days[month - 1];
+    }
+    
     function createEmptyHistory() {
         var h = {};
-        var today = getTodayKey();
+        var weekStart = getWeekStartDate();
         for (var i = 0; i < HISTORY_DAYS; i++) {
-            h[today - i] = 0;
+            h[weekStart + i] = 0;
         }
         return h;
     }
@@ -344,6 +386,7 @@ class PomodoroApp extends Application.AppBase {
             var storage = Application.Storage;
             if (storage != null) {
                 storage.setValue("history", history);
+                storage.setValue("weekStartDate", weekStartDate);
             }
         }
     }
@@ -355,6 +398,10 @@ class PomodoroApp extends Application.AppBase {
                 var savedHistory = storage.getValue("history");
                 if (savedHistory != null) {
                     history = savedHistory;
+                }
+                var savedWeekStart = storage.getValue("weekStartDate");
+                if (savedWeekStart != null) {
+                    weekStartDate = savedWeekStart;
                 }
             }
         }
@@ -389,6 +436,7 @@ class PomodoroApp extends Application.AppBase {
     function restoreTimerState() {
         loadSettings();
         loadHistory();
+        checkAndResetWeek();
         
         if (Application has :Storage) {
             var storage = Application.Storage;

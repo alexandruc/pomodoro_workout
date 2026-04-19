@@ -34,7 +34,7 @@ class HistoryView extends WatchUi.View {
         var centerX = screenWidth / 2;
         
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-        dc.drawText(centerX, screenHeight * 0.08, titleFont, "7-Day History", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, screenHeight * 0.08, titleFont, "Weekly History", Graphics.TEXT_JUSTIFY_CENTER);
         
         var chartWidth = screenWidth * 0.7;
         var chartHeight = screenHeight * 0.35;
@@ -49,6 +49,8 @@ class HistoryView extends WatchUi.View {
             }
         }
         
+        var todayIndex = app.getTodayWeekdayIndex();
+        
         for (var i = 0; i < history.size(); i++) {
             var x = startX + i * (barWidth + 4);
             var barHeight = history[i] * chartHeight / maxVal;
@@ -56,7 +58,9 @@ class HistoryView extends WatchUi.View {
                 barHeight = 2;
             }
             
-            if (history[i] > 0) {
+            if (i == todayIndex) {
+                dc.setColor(0x9900FF, Graphics.COLOR_BLACK);
+            } else if (history[i] > 0) {
                 dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_BLACK);
             } else {
                 dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_BLACK);
@@ -65,7 +69,8 @@ class HistoryView extends WatchUi.View {
             dc.fillRectangle(x, startY - barHeight, barWidth, barHeight);
             
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-            var label = (i + 1).toString();
+            var dayLabels = ["M", "T", "W", "T", "F", "S", "S"];
+            var label = dayLabels[i];
             dc.drawText(x + barWidth / 2, startY + 2, labelFont, label, Graphics.TEXT_JUSTIFY_CENTER);
         }
         
