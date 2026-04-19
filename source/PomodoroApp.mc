@@ -31,7 +31,7 @@ class PomodoroApp extends Application.AppBase {
         state = :idle;
         completedBlockType = null;
         
-        workTime = 2;
+        workTime = 5;
         breakTime = 1;
         history = createEmptyHistory();
         weekStartDate = getWeekStartDate();
