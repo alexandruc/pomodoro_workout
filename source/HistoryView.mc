@@ -33,14 +33,16 @@ class HistoryView extends WatchUi.View {
         
         var centerX = screenWidth / 2;
         
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-        dc.drawText(centerX, screenHeight * 0.08, titleFont, "Weekly History", Graphics.TEXT_JUSTIFY_CENTER);
-        
         var chartWidth = screenWidth * 0.7;
         var chartHeight = screenHeight * 0.35;
+        var titleY = chartHeight / 2;
+        
         var barWidth = chartWidth / 7 - 4;
         var startX = screenWidth * 0.15;
         var startY = screenHeight * 0.70;
+        
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
+        dc.drawText(centerX, titleY, titleFont, "Weekly History", Graphics.TEXT_JUSTIFY_CENTER);
         
         var maxVal = 1;
         for (var i = 0; i < history.size(); i++) {
