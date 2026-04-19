@@ -83,7 +83,7 @@ class PomodoroView extends WatchUi.View {
         var hintY = statusY + statusHeight / 2 + hintHeight / 2 + (height * 0.02);
         
         var purple = 0x9900FF;
-        var line1Y = timeY - (timeY - (todY + todHeight)) / 3;
+        var line1Y = timeY - (timeY - (todY + todHeight)) / 3 + height * 0.01;
         var line2Y = statusY + statusHeight + (hintY - (statusY + statusHeight)) / 2;
         
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
