@@ -79,7 +79,7 @@ class PomodoroView extends WatchUi.View {
         var labelY = centerY - timeHeight / 2 - todHeight * 2 - (height * 0.02);
         var todY = centerY - timeHeight / 2 - todHeight - (height * 0.01);
         var timeY = centerY - timeHeight / 2;
-        var statusY = timeY + timeHeight / 2 + statusHeight / 2 + (height * 0.06);
+        var statusY = timeY + timeHeight / 2 + statusHeight / 2 + (height * 0.07);
         var hintY = statusY + statusHeight / 2 + hintHeight / 2 + (height * 0.02);
         
         var purple = 0x9900FF;
