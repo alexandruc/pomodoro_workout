@@ -25,14 +25,6 @@ jobs:
         run: |
           echo -n "${{ secrets.DEVELOPER_KEY }}" | base64 -d > $HOME/developer_key
 
-      - name: Build for fenix3
-        run: |
-          cd pomodoro_workout
-          $SDK_PATH/bin/monkeyc -f monkey.jungle \
-            -d fenix3 \
-            -y $HOME/developer_key \
-            -o bin/pomodoro_workout_fenix3.prg
-
       - name: Build for fr970
         run: |
           cd pomodoro_workout
@@ -46,5 +38,4 @@ jobs:
         with:
           name: pomodoro-workout-prg
           path: |
-            pomodoro_workout/bin/pomodoro_workout_fenix3.prg
             pomodoro_workout/bin/pomodoro_workout_fr970.prg
