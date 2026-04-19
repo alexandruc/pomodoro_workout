@@ -15,4 +15,12 @@ class HistoryDelegate extends WatchUi.BehaviorDelegate {
         
         return false;
     }
+    
+    function onSwipe(evt) {
+        if (evt.getDirection() == WatchUi.SWIPE_RIGHT) {
+            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
+            return true;
+        }
+        return false;
+    }
 }

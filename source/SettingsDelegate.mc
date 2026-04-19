@@ -90,4 +90,68 @@ class SettingsDelegate extends WatchUi.BehaviorDelegate {
         
         return false;
     }
+    
+    function onTap(evt) {
+        var v = view;
+        if (v == null || !(v instanceof SettingsView)) {
+            return false;
+        }
+        
+        var selected = v.getSelectedItem();
+        
+        if (selected == 0) {
+            var work = app.getWorkTime();
+            if (work >= 60) {
+                app.setWorkTime(5);
+            } else {
+                app.setWorkTime(work + 5);
+            }
+        } else if (selected == 1) {
+            var breakT = app.getBreakTime();
+            if (breakT >= 30) {
+                app.setBreakTime(1);
+            } else {
+                app.setBreakTime(breakT + 1);
+            }
+        } else if (selected == 2) {
+            WatchUi.pushView(new HistoryView(app), new HistoryDelegate(), WatchUi.SLIDE_IMMEDIATE);
+            return true;
+        }
+        WatchUi.requestUpdate();
+        return true;
+    }
+    
+    function onSwipe(evt) {
+        var v = view;
+        if (v == null || !(v instanceof SettingsView)) {
+            return false;
+        }
+        
+        var dir = evt.getDirection();
+        
+        if (dir == WatchUi.SWIPE_RIGHT) {
+            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
+            return true;
+        }
+        
+        if (dir == WatchUi.SWIPE_UP) {
+            var selected = v.getSelectedItem();
+            if (selected > 0) {
+                v.setSelectedItem(selected - 1);
+            }
+            WatchUi.requestUpdate();
+            return true;
+        }
+        
+        if (dir == WatchUi.SWIPE_DOWN) {
+            var selected = v.getSelectedItem();
+            if (selected < 2) {
+                v.setSelectedItem(selected + 1);
+            }
+            WatchUi.requestUpdate();
+            return true;
+        }
+        
+        return false;
+    }
 }

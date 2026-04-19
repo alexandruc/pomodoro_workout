@@ -37,6 +37,9 @@ class PomodoroView extends WatchUi.View {
         } else if (state == :breakTime) {
             status = "BREAK";
             statusColor = Graphics.COLOR_GREEN;
+        } else if (state == :paused) {
+            status = "PAUSED";
+            statusColor = 0x9900FF;
         }
         
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
@@ -108,6 +111,8 @@ class PomodoroView extends WatchUi.View {
             dc.drawText(width / 2, hintY, hintFont, "START to work", Graphics.TEXT_JUSTIFY_CENTER);
         } else if (state == :working or state == :breakTime) {
             dc.drawText(width / 2, hintY, hintFont, "DOWN to stop", Graphics.TEXT_JUSTIFY_CENTER);
+        } else if (state == :paused) {
+            dc.drawText(width / 2, hintY, hintFont, "START to resume", Graphics.TEXT_JUSTIFY_CENTER);
         }
     }
 }

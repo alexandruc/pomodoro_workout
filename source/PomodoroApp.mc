@@ -23,6 +23,7 @@ class PomodoroApp extends Application.AppBase {
     private var breakTime;
     private var history;
     private var weekStartDate;
+    private var previousState;
     
     const HISTORY_DAYS = 7;
     
@@ -35,6 +36,7 @@ class PomodoroApp extends Application.AppBase {
         breakTime = 1;
         history = createEmptyHistory();
         weekStartDate = getWeekStartDate();
+        previousState = 0;
         
         remainingSeconds = workTime * 60;
         timerDelegate = null;
@@ -47,7 +49,7 @@ class PomodoroApp extends Application.AppBase {
     }
 
     function onStop(appState) {
-        if (state == :working or state == :breakTime) {
+        if (state == :working or state == :breakTime or state == :paused) {
             saveTimerState();
         }
         saveHistory();
@@ -66,6 +68,10 @@ class PomodoroApp extends Application.AppBase {
         
         if (state == :working or state == :breakTime) {
             startTimer();
+            WatchUi.requestUpdate();
+        }
+        
+        if (state == :paused) {
             WatchUi.requestUpdate();
         }
         
@@ -236,6 +242,31 @@ class PomodoroApp extends Application.AppBase {
         WatchUi.requestUpdate();
     }
     
+    function pauseTimer() {
+        if (state == :working) {
+            previousState = 1;
+        } else if (state == :breakTime) {
+            previousState = 2;
+        }
+        stopTimer();
+        state = :paused;
+        saveTimerState();
+        WatchUi.requestUpdate();
+    }
+    
+    function resumeTimer() {
+        if (state == :paused) {
+            if (previousState == 1) {
+                state = :working;
+            } else if (previousState == 2) {
+                state = :breakTime;
+            }
+            startTimer();
+            saveTimerState();
+            WatchUi.requestUpdate();
+        }
+    }
+    
     function startTimer() {
         if (!(System has :ServiceLogin)) {
             if (timer == null) {
@@ -362,10 +393,13 @@ class PomodoroApp extends Application.AppBase {
                     stateInt = 1;
                 } else if (state == :breakTime) {
                     stateInt = 2;
+                } else if (state == :paused) {
+                    stateInt = 3;
                 }
                 storage.setValue("timerState", stateInt);
                 storage.setValue("timerDuration", remainingSeconds);
                 storage.setValue("timerStartTime", Time.now().value());
+                storage.setValue("previousState", previousState);
             }
         }
     }
@@ -460,6 +494,13 @@ class PomodoroApp extends Application.AppBase {
                         state = :working;
                     } else if (timerState == 2) {
                         state = :breakTime;
+                    } else if (timerState == 3) {
+                        state = :paused;
+                    }
+                    
+                    var savedPrev = storage.getValue("previousState");
+                    if (savedPrev != null) {
+                        previousState = savedPrev;
                     }
                 } else {
                     state = :idle;

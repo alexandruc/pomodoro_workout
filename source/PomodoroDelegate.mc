@@ -18,8 +18,13 @@ class PomodoroDelegate extends WatchUi.BehaviorDelegate {
         var key = keyEvent.getKey();
         
         if (key == WatchUi.KEY_START or key == WatchUi.KEY_ENTER) {
-            if (app.getState() == :idle) {
+            var currentState = app.getState();
+            if (currentState == :idle) {
                 app.startWork();
+            } else if (currentState == :working or currentState == :breakTime) {
+                app.pauseTimer();
+            } else if (currentState == :paused) {
+                app.resumeTimer();
             }
             return true;
         }
@@ -52,5 +57,30 @@ class PomodoroDelegate extends WatchUi.BehaviorDelegate {
     function onMenuHold() {
         menuHeld = false;
         app.pushSettingsMenu();
+    }
+    
+    function onTap(evt) {
+        var currentState = app.getState();
+        if (currentState == :idle) {
+            app.startWork();
+        } else if (currentState == :working or currentState == :breakTime) {
+            app.pauseTimer();
+        } else if (currentState == :paused) {
+            app.resumeTimer();
+        }
+        return true;
+    }
+    
+    function onSwipe(evt) {
+        if (evt.getDirection() == WatchUi.SWIPE_RIGHT) {
+            app.reset();
+            return true;
+        }
+        return false;
+    }
+    
+    function onHold(evt) {
+        app.pushSettingsMenu();
+        return true;
     }
 }

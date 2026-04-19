@@ -40,7 +40,7 @@ class SettingsView extends WatchUi.View {
         var centerX = screenWidth / 2;
         
         var titleY = screenHeight * 0.05;
-        var itemY = screenHeight * 0.18;
+        var startY = screenHeight * 0.18;
         var spacing = screenHeight * 0.12;
         
         dc.drawText(centerX, titleY, titleFont, "Settings", Graphics.TEXT_JUSTIFY_CENTER);
@@ -50,27 +50,23 @@ class SettingsView extends WatchUi.View {
         } else {
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         }
-        dc.drawText(centerX, itemY, itemFont, "Work: " + workTime + " min", Graphics.TEXT_JUSTIFY_CENTER);
-        
-        itemY = itemY + spacing;
+        dc.drawText(centerX, startY, itemFont, "Work: " + workTime + " min", Graphics.TEXT_JUSTIFY_CENTER);
         
         if (selectedItem == 1) {
             dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_BLACK);
         } else {
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         }
-        dc.drawText(centerX, itemY, itemFont, "Break: " + breakTime + " min", Graphics.TEXT_JUSTIFY_CENTER);
-        
-        itemY = itemY + spacing;
+        dc.drawText(centerX, startY + spacing, itemFont, "Break: " + breakTime + " min", Graphics.TEXT_JUSTIFY_CENTER);
         
         if (selectedItem == 2) {
             dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_BLACK);
         } else {
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         }
-        dc.drawText(centerX, itemY, itemFont, "History", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, startY + spacing * 2, itemFont, "History", Graphics.TEXT_JUSTIFY_CENTER);
         
-            
+             
     }
     
     function getSelectedItem() {

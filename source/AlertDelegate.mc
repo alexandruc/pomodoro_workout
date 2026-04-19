@@ -79,4 +79,38 @@ class AlertDelegate extends WatchUi.BehaviorDelegate {
             WatchUi.switchToView(previousView, previousDelegate, WatchUi.SLIDE_IMMEDIATE);
         }
     }
+    
+    function onTap(evt) {
+        executeSelected();
+        return true;
+    }
+    
+    function onSwipe(evt) {
+        var dir = evt.getDirection();
+        
+        if (dir == WatchUi.SWIPE_RIGHT) {
+            dismissAlert();
+            return true;
+        }
+        
+        if (dir == WatchUi.SWIPE_UP) {
+            var selected = alertView.getSelectedItem();
+            if (selected > 0) {
+                alertView.setSelectedItem(selected - 1);
+            }
+            WatchUi.requestUpdate();
+            return true;
+        }
+        
+        if (dir == WatchUi.SWIPE_DOWN) {
+            var selected = alertView.getSelectedItem();
+            if (selected < 2) {
+                alertView.setSelectedItem(selected + 1);
+            }
+            WatchUi.requestUpdate();
+            return true;
+        }
+        
+        return false;
+    }
 }
