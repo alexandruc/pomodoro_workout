@@ -25,8 +25,8 @@ A Pomodoro timer app for Garmin wearable devices that helps users manage work se
 - **Timer Resume**: Timer stops when exiting app, resumes from saved position when returning
 - **State Persistence**: Work time, break time, transition mode, and history are saved when exiting app
 - **Customizable Settings**: Long-press MENU to access settings menu
-- **Work Time**: Adjustable duration (default: 5 min)
-- **Break Time**: Adjustable duration (default: 1 min)
+- **Work Time**: Adjustable duration (default: 25 min)
+- **Break Time**: Adjustable duration (default: 5 min)
 - **Transition Mode**: Manual or Auto (default: Manual)
 - **History**: Weekly bar graph showing completed work blocks
 
@@ -39,9 +39,8 @@ A Pomodoro timer app for Garmin wearable devices that helps users manage work se
 | **DOWN** | Stop/reset timer |
 | **SWIPE RIGHT** | Stop/reset timer |
 | **LONG-PRESS / HOLD** | Open settings menu |
-| **UP/DOWN** (on alert/settings) | Navigate between options |
-| **ENTER / TAP** (on alert/settings) | Select option |
-| **SWIPE UP/DOWN** (on settings) | Navigate between items |
+| **SWIPE UP/DOWN** (on settings/alert) | Navigate between items |
+| **TAP ON ITEM** (on settings/alert) | Select and execute item |
 | **SWIPE RIGHT** (on alert/settings/history) | Go back |
 | **ESC/BACK** | Dismiss / Go back |
 
