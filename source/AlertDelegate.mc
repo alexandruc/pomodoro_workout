@@ -49,10 +49,6 @@ class AlertDelegate extends WatchUi.BehaviorDelegate {
     }
     
     function executeSelected() {
-        if (Attention has :backing) {
-            Attention.backing(false);
-        }
-        
         var selected = alertView.getSelectedItem();
         
         if (selected == 0) {
@@ -67,9 +63,6 @@ class AlertDelegate extends WatchUi.BehaviorDelegate {
     }
     
     function dismissAlert() {
-        if (Attention has :backing) {
-            Attention.backing(false);
-        }
         app.handleAlertChoice(:dismiss);
         returnToMainView();
     }
@@ -98,10 +91,6 @@ class AlertDelegate extends WatchUi.BehaviorDelegate {
         }
         
         alertView.setSelectedItem(tappedOption);
-        
-        if (Attention has :backing) {
-            Attention.backing(false);
-        }
         
         if (tappedOption == 0) {
             app.handleAlertChoice(:startWork);

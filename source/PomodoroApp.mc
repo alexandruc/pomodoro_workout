@@ -363,14 +363,14 @@ class PomodoroApp extends Application.AppBase {
             Attention.playTone(Attention.TONE_ALARM);
         }
         
-        alertView = new AlertView(self, message);
+        alertView = new AlertView(message);
         var alertDelegate = new AlertDelegate(self, alertView, mainView, mainDelegate);
         WatchUi.switchToView(alertView, alertDelegate, WatchUi.SLIDE_IMMEDIATE);
     }
     
     function showTransitionPopup(message, nextAction) {
         nextTransitionAction = nextAction;
-        var transitionView = new TransitionView(self, message);
+        var transitionView = new TransitionView(message);
         var transitionDelegate = new TransitionDelegate(self, transitionView, mainView, mainDelegate, nextAction);
         WatchUi.switchToView(transitionView, transitionDelegate, WatchUi.SLIDE_IMMEDIATE);
     }

@@ -2,11 +2,9 @@ using Toybox.WatchUi;
 using Toybox.Graphics;
 
 class TransitionView extends WatchUi.View {
-    private var app;
     private var message;
     
-    function initialize(a, msg) {
-        app = a;
+    function initialize(msg) {
         message = msg;
         View.initialize();
     }

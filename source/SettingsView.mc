@@ -35,9 +35,7 @@ function onUpdate(dc) {
         
         var titleFont = Graphics.FONT_TINY;
         var itemFont = Graphics.FONT_TINY;
-        var helpFont = Graphics.FONT_TINY;
         
-        var isRound = (dc has :getRadius) ? (dc.getRadius() > 0) : false;
         var centerX = screenWidth / 2;
         
         var titleY = screenHeight * 0.05;

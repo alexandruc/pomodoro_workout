@@ -2,12 +2,10 @@ using Toybox.WatchUi;
 using Toybox.Graphics;
 
 class AlertView extends WatchUi.View {
-    private var app;
     private var message;
     private var selectedItem;
     
-    function initialize(a, msg) {
-        app = a;
+    function initialize(msg) {
         message = msg;
         selectedItem = 0;
         View.initialize();
