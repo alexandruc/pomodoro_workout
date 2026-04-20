@@ -373,19 +373,15 @@ class PomodoroApp extends Application.AppBase {
         var transitionView = new TransitionView(self, message);
         var transitionDelegate = new TransitionDelegate(self, transitionView, mainView, mainDelegate, nextAction);
         WatchUi.switchToView(transitionView, transitionDelegate, WatchUi.SLIDE_IMMEDIATE);
-        
-        var transitionTimer = new Timer.Timer();
-        transitionTimer.start(method(:onTransitionTimerDone), 3000, false);
     }
     
-    function onTransitionTimerDone() as Void {
+    function executeTransition() {
         if (nextTransitionAction == :startBreak) {
             startBreak();
         } else if (nextTransitionAction == :startWork) {
             startWork();
         }
         nextTransitionAction = null;
-        WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
     }
     
     function handleAlertChoice(choice) {

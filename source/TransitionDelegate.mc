@@ -1,4 +1,5 @@
 using Toybox.WatchUi;
+using Toybox.Timer;
 
 class TransitionDelegate extends WatchUi.BehaviorDelegate {
     private var app;
@@ -6,6 +7,7 @@ class TransitionDelegate extends WatchUi.BehaviorDelegate {
     private var previousView;
     private var previousDelegate;
     private var nextAction;
+    private var transitionTimer;
 
     function initialize(a, view, prevView, prevDelegate, action) {
         app = a;
@@ -14,14 +16,13 @@ class TransitionDelegate extends WatchUi.BehaviorDelegate {
         previousDelegate = prevDelegate;
         nextAction = action;
         BehaviorDelegate.initialize();
+        
+        transitionTimer = new Timer.Timer();
+        transitionTimer.start(method(:onTimerExpired), 3000, false);
     }
-
-    function onTransitionComplete() {
-        if (nextAction == :startBreak) {
-            app.startBreak();
-        } else if (nextAction == :startWork) {
-            app.startWork();
-        }
+    
+    function onTimerExpired() as Void {
+        app.executeTransition();
         returnToMainView();
     }
     
