@@ -63,6 +63,8 @@ A Pomodoro timer app for Garmin wearable devices that helps users manage work se
 | Forerunner 255s | `fr255s` | 218×218 | MIP |
 | Forerunner 255s Music | `fr255sm` | 218×218 | MIP |
 | Forerunner 570 | `fr57047mm` | 260×260 | MIP |
+| Forerunner 965 | `fr965` | 260×260 | OLED |
+| Forerunner 945 | `fr945` | 260×260 | MIP |
 | Forerunner 970 | `fr970` | 240×240 | MIP |
 | Venu 2 Plus | `venu2plus` | 416×416 | AMOLED |
 
@@ -93,6 +95,12 @@ monkeyc -f pomodoro_workout/monkey.jungle -o pomodoro_workout/bin/pomodoro_worko
 # For FR255s / FR255s Music
 monkeyc -f pomodoro_workout/monkey.jungle -o pomodoro_workout/bin/pomodoro_workout.prg -d fr255s -y developer_key
 monkeyc -f pomodoro_workout/monkey.jungle -o pomodoro_workout/bin/pomodoro_workout.prg -d fr255sm -y developer_key
+
+# For FR965
+monkeyc -f pomodoro_workout/monkey.jungle -o pomodoro_workout/bin/pomodoro_workout.prg -d fr965 -y developer_key
+
+# For FR945
+monkeyc -f pomodoro_workout/monkey.jungle -o pomodoro_workout/bin/pomodoro_workout.prg -d fr945 -y developer_key
 
 # For Venu 2 Plus
 monkeyc -f pomodoro_workout/monkey.jungle -o pomodoro_workout/bin/pomodoro_workout.prg -d venu2plus -y developer_key
