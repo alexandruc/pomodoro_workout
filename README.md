@@ -6,12 +6,12 @@ A Pomodoro timer app for Garmin wearable devices that helps users manage work se
 
 <table>
   <tr>
-    <td><img src="screenshots/Screenshot_1.png" width="50" max-width="50px"></td>
-    <td><img src="screenshots/Screenshot_2.png" width="50" max-width="50px"></td>
+    <td><img src="screenshots/Screenshot_1.png" width="200" max-width="200px"></td>
+    <td><img src="screenshots/Screenshot_2.png" width="200" max-width="200px"></td>
   </tr>
   <tr>
-    <td><img src="screenshots/Screenshot_3.png" width="50" max-width="50px"></td>
-    <td><img src="screenshots/Screenshot_4.png" width="50" max-width="50px"></td>
+    <td><img src="screenshots/Screenshot_3.png" width="200" max-width="200px"></td>
+    <td><img src="screenshots/Screenshot_4.png" width="200" max-width="200px"></td>
   </tr>
 </table>
 
