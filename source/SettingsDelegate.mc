@@ -99,25 +99,41 @@ class SettingsDelegate extends WatchUi.BehaviorDelegate {
             return false;
         }
         
-        var selected = v.getSelectedItem();
+        var coords = evt.getCoordinates();
+        var tapY = coords[1];
         
-        if (selected == 0) {
+        var screenHeight = System.getDeviceSettings().screenHeight;
+        var startY = screenHeight * 0.18;
+        var spacing = screenHeight * 0.12;
+        
+        var tappedItem = ((tapY - startY) / spacing).toNumber();
+        
+        if (tappedItem < 0) {
+            tappedItem = 0;
+        }
+        if (tappedItem > 3) {
+            tappedItem = 3;
+        }
+        
+        v.setSelectedItem(tappedItem);
+        
+        if (tappedItem == 0) {
             var work = app.getWorkTime();
             if (work >= 60) {
                 app.setWorkTime(5);
             } else {
                 app.setWorkTime(work + 5);
             }
-        } else if (selected == 1) {
+        } else if (tappedItem == 1) {
             var breakT = app.getBreakTime();
             if (breakT >= 30) {
                 app.setBreakTime(1);
             } else {
                 app.setBreakTime(breakT + 1);
             }
-        } else if (selected == 2) {
+        } else if (tappedItem == 2) {
             app.toggleTransitionMode();
-        } else if (selected == 3) {
+        } else if (tappedItem == 3) {
             WatchUi.pushView(new HistoryView(app), new HistoryDelegate(), WatchUi.SLIDE_IMMEDIATE);
             return true;
         }

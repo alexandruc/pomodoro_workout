@@ -81,7 +81,37 @@ class AlertDelegate extends WatchUi.BehaviorDelegate {
     }
     
     function onTap(evt) {
-        executeSelected();
+        var coords = evt.getCoordinates();
+        var tapY = coords[1];
+        
+        var screenHeight = System.getDeviceSettings().screenHeight;
+        var optionsStartY = screenHeight * 0.45;
+        var spacing = screenHeight * 0.14;
+        
+        var tappedOption = ((tapY - optionsStartY) / spacing).toNumber();
+        
+        if (tappedOption < 0) {
+            tappedOption = 0;
+        }
+        if (tappedOption > 2) {
+            tappedOption = 2;
+        }
+        
+        alertView.setSelectedItem(tappedOption);
+        
+        if (Attention has :backing) {
+            Attention.backing(false);
+        }
+        
+        if (tappedOption == 0) {
+            app.handleAlertChoice(:startWork);
+        } else if (tappedOption == 1) {
+            app.handleAlertChoice(:startBreak);
+        } else if (tappedOption == 2) {
+            app.handleAlertChoice(:dismiss);
+        }
+        
+        returnToMainView();
         return true;
     }
     
