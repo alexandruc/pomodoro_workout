@@ -20,9 +20,10 @@ class SettingsView extends WatchUi.View {
     function onHide() {
     }
 
-    function onUpdate(dc) {
+function onUpdate(dc) {
         var workTime = app.getWorkTime();
         var breakTime = app.getBreakTime();
+        var transitionMode = app.getTransitionMode();
         
         var screenWidth = dc.getWidth();
         var screenHeight = dc.getHeight();
@@ -59,14 +60,22 @@ class SettingsView extends WatchUi.View {
         }
         dc.drawText(centerX, startY + spacing, itemFont, "Break: " + breakTime + " min", Graphics.TEXT_JUSTIFY_CENTER);
         
+        var transitionText = transitionMode == :auto ? "Transition: Auto" : "Transition: Manual";
         if (selectedItem == 2) {
             dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_BLACK);
         } else {
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         }
-        dc.drawText(centerX, startY + spacing * 2, itemFont, "History", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, startY + spacing * 2, itemFont, transitionText, Graphics.TEXT_JUSTIFY_CENTER);
         
-             
+        if (selectedItem == 3) {
+            dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_BLACK);
+        } else {
+            dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
+        }
+        dc.drawText(centerX, startY + spacing * 3, itemFont, "History", Graphics.TEXT_JUSTIFY_CENTER);
+        
+              
     }
     
     function getSelectedItem() {

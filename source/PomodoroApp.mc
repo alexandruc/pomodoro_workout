@@ -24,6 +24,8 @@ class PomodoroApp extends Application.AppBase {
     private var history;
     private var weekStartDate;
     private var previousState;
+    private var transitionMode;
+    private var nextTransitionAction;
     
     const HISTORY_DAYS = 7;
     
@@ -34,6 +36,8 @@ class PomodoroApp extends Application.AppBase {
         
         workTime = 5;
         breakTime = 1;
+        transitionMode = :manual;
+        nextTransitionAction = null;
         history = createEmptyHistory();
         weekStartDate = getWeekStartDate();
         previousState = 0;
@@ -117,6 +121,22 @@ class PomodoroApp extends Application.AppBase {
     
     function setBreakTime(minutes) {
         breakTime = minutes;
+    }
+    
+    function getTransitionMode() {
+        return transitionMode;
+    }
+    
+    function setTransitionMode(mode) {
+        transitionMode = mode;
+    }
+    
+    function toggleTransitionMode() {
+        if (transitionMode == :manual) {
+            transitionMode = :auto;
+        } else {
+            transitionMode = :manual;
+        }
     }
     
     function getHistoryArray() {
@@ -301,15 +321,25 @@ class PomodoroApp extends Application.AppBase {
                     var vibTimer = new Timer.Timer();
                     vibTimer.start(method(:onWorkVibrateSecond), 1200, false);
                 }
-                completedBlockType = :work;
-                showAlertDialog("Work Done!");
+                
+                if (transitionMode == :auto) {
+                    showTransitionPopup("Starting break", :startBreak);
+                } else {
+                    completedBlockType = :work;
+                    showAlertDialog("Work Done!");
+                }
             } else if (state == :breakTime) {
                 if (Attention has :vibrate) {
                     var breakProfile = [new Attention.VibeProfile(200, 1000)];
                     Attention.vibrate(breakProfile);
                 }
-                completedBlockType = :break;
-                showAlertDialog("Break Done!");
+                
+                if (transitionMode == :auto) {
+                    showTransitionPopup("Starting work", :startWork);
+                } else {
+                    completedBlockType = :break;
+                    showAlertDialog("Break Done!");
+                }
             }
         }
         
@@ -336,6 +366,26 @@ class PomodoroApp extends Application.AppBase {
         alertView = new AlertView(self, message);
         var alertDelegate = new AlertDelegate(self, alertView, mainView, mainDelegate);
         WatchUi.switchToView(alertView, alertDelegate, WatchUi.SLIDE_IMMEDIATE);
+    }
+    
+    function showTransitionPopup(message, nextAction) {
+        nextTransitionAction = nextAction;
+        var transitionView = new TransitionView(self, message);
+        var transitionDelegate = new TransitionDelegate(self, transitionView, mainView, mainDelegate, nextAction);
+        WatchUi.switchToView(transitionView, transitionDelegate, WatchUi.SLIDE_IMMEDIATE);
+        
+        var transitionTimer = new Timer.Timer();
+        transitionTimer.start(method(:onTransitionTimerDone), 3000, false);
+    }
+    
+    function onTransitionTimerDone() as Void {
+        if (nextTransitionAction == :startBreak) {
+            startBreak();
+        } else if (nextTransitionAction == :startWork) {
+            startWork();
+        }
+        nextTransitionAction = null;
+        WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
     }
     
     function handleAlertChoice(choice) {
@@ -447,6 +497,8 @@ class PomodoroApp extends Application.AppBase {
             if (storage != null) {
                 storage.setValue("workTime", workTime);
                 storage.setValue("breakTime", breakTime);
+                var modeInt = transitionMode == :auto ? 1 : 0;
+                storage.setValue("transitionMode", modeInt);
             }
         }
     }
@@ -457,11 +509,15 @@ class PomodoroApp extends Application.AppBase {
             if (storage != null) {
                 var savedWorkTime = storage.getValue("workTime");
                 var savedBreakTime = storage.getValue("breakTime");
+                var savedTransition = storage.getValue("transitionMode");
                 if (savedWorkTime != null) {
                     workTime = savedWorkTime;
                 }
                 if (savedBreakTime != null) {
                     breakTime = savedBreakTime;
+                }
+                if (savedTransition != null) {
+                    transitionMode = savedTransition == 1 ? :auto : :manual;
                 }
             }
         }

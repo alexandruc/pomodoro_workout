@@ -33,7 +33,7 @@ class SettingsDelegate extends WatchUi.BehaviorDelegate {
         }
         
         if (key == WatchUi.KEY_DOWN) {
-            if (selected < 2) {
+            if (selected < 3) {
                 v.setSelectedItem(selected + 1);
             }
             WatchUi.requestUpdate();
@@ -56,6 +56,8 @@ class SettingsDelegate extends WatchUi.BehaviorDelegate {
                     app.setBreakTime(current + 1);
                 }
             } else if (selected == 2) {
+                app.toggleTransitionMode();
+            } else if (selected == 3) {
                 WatchUi.pushView(new HistoryView(app), new HistoryDelegate(), WatchUi.SLIDE_IMMEDIATE);
                 return true;
             }
@@ -114,6 +116,8 @@ class SettingsDelegate extends WatchUi.BehaviorDelegate {
                 app.setBreakTime(breakT + 1);
             }
         } else if (selected == 2) {
+            app.toggleTransitionMode();
+        } else if (selected == 3) {
             WatchUi.pushView(new HistoryView(app), new HistoryDelegate(), WatchUi.SLIDE_IMMEDIATE);
             return true;
         }
@@ -145,7 +149,7 @@ class SettingsDelegate extends WatchUi.BehaviorDelegate {
         
         if (dir == WatchUi.SWIPE_DOWN) {
             var selected = v.getSelectedItem();
-            if (selected < 2) {
+            if (selected < 3) {
                 v.setSelectedItem(selected + 1);
             }
             WatchUi.requestUpdate();
