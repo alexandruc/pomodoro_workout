@@ -2,36 +2,57 @@
 
 A Pomodoro timer app for Garmin wearable devices that helps users manage work sessions with customizable work and break intervals.
 
-![App Screenshot](screenshot.png)
+## Screenshots
+
+<table>
+  <tr>
+    <td><img src="screenshots/Screenshot_1.png" width="50" max-width="50px"></td>
+    <td><img src="screenshots/Screenshot_2.png" width="50" max-width="50px"></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/Screenshot_3.png" width="50" max-width="50px"></td>
+    <td><img src="screenshots/Screenshot_4.png" width="50" max-width="50px"></td>
+  </tr>
+</table>
 
 ## Features
 
 - **Time of Day**: Clock display (HH:MM:SS) above the timer
 - **Timer**: Customizable work/break blocks with visual countdown
+- **Pause/Resume**: Tap or press START to pause/resume timer
+- **Auto Transition**: Automatically transition between work and break blocks
 - **Alert Popup**: Custom popup with Start Work / Start Break / Dismiss options when blocks complete
 - **Timer Resume**: Timer stops when exiting app, resumes from saved position when returning
-- **State Persistence**: Work time, break time, and history are saved when exiting app
+- **State Persistence**: Work time, break time, transition mode, and history are saved when exiting app
 - **Customizable Settings**: Long-press MENU to access settings menu
-- **Work Time**: Adjustable duration (default: 25 min)
-- **Break Time**: Adjustable duration (default: 5 min)
-- **History**: 7-day bar graph showing completed work blocks
+- **Work Time**: Adjustable duration (default: 5 min)
+- **Break Time**: Adjustable duration (default: 1 min)
+- **Transition Mode**: Manual or Auto (default: Manual)
+- **History**: Weekly bar graph showing completed work blocks
 
 ## Controls
 
 | Button | Action |
 |--------|--------|
-| **START / ENTER** | Start a work block immediately |
+| **START / ENTER** | Start work / Pause / Resume |
+| **TAP** | Start work / Pause / Resume |
 | **DOWN** | Stop/reset timer |
-| **MENU (long-press)** | Open settings menu |
-| **UP/DOWN** (on alert) | Navigate between options |
-| **ENTER** (on alert) | Select option |
-| **ESC/BACK** (on alert) | Dismiss and return to main screen |
+| **SWIPE RIGHT** | Stop/reset timer |
+| **LONG-PRESS / HOLD** | Open settings menu |
+| **UP/DOWN** (on alert/settings) | Navigate between options |
+| **ENTER / TAP** (on alert/settings) | Select option |
+| **SWIPE UP/DOWN** (on settings) | Navigate between items |
+| **SWIPE RIGHT** (on alert/settings/history) | Go back |
+| **ESC/BACK** | Dismiss / Go back |
 
 ## Settings Menu
 
 - **Work Time**: Set work duration (wraps around)
 - **Break Time**: Set break duration (wraps around)
-- **History**: View 7-day completion graph
+- **Transition**: Manual or Auto mode
+  - **Manual**: Show alert popup when block completes
+  - **Auto**: Vibrate and auto-start next block with "Starting break/work" popup
+- **History**: View weekly completion graph
 
 ## Supported Devices
 
@@ -99,9 +120,11 @@ pomodoro_workout/
 │   ├── PomodoroDelegate.mc       # Input handling
 │   ├── AlertView.mc              # Custom alert popup view
 │   ├── AlertDelegate.mc          # Alert popup input handling
+│   ├── TransitionView.mc         # Auto transition popup view
+│   ├── TransitionDelegate.mc    # Auto transition input handling
 │   ├── SettingsView.mc           # Settings screen
 │   ├── SettingsDelegate.mc       # Settings input
-│   ├── HistoryView.mc            # 7-day history graph
+│   ├── HistoryView.mc            # Weekly history graph
 │   └── HistoryDelegate.mc        # History input
 └── resources/
     ├── strings.xml               # App strings
@@ -114,9 +137,10 @@ pomodoro_workout/
 
 - **App Type**: Watch App (standalone)
 - **Language**: Monkey C
-- **Storage**: Application.Storage (persists timer state, settings, history)
+- **Storage**: Application.Storage (persists timer state, settings, history, transition mode)
 - **Timer**: Toybox.Timer (1-second interval)
 - **Alert System**: Custom AlertView popup with vibration and alarm tone
+- **Transition Modes**: Manual (alert popup) or Auto (automatic with notification)
 
 ## License
 
