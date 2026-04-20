@@ -34,8 +34,8 @@ class PomodoroApp extends Application.AppBase {
         state = :idle;
         completedBlockType = null;
         
-        workTime = 5;
-        breakTime = 1;
+        workTime = 25;
+        breakTime = 5;
         transitionMode = :manual;
         nextTransitionAction = null;
         history = createEmptyHistory();
